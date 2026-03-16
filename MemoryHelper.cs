@@ -189,11 +189,21 @@ namespace MemoryHelper
             {
                 try
                 {
+                    // 尝试使用GBK编码
                     return Encoding.GetEncoding(936).GetString(byteData); // GBK
                 }
                 catch
                 {
-                    return Encoding.Default.GetString(byteData);
+                    try
+                    {
+                        // 尝试使用默认编码
+                        return Encoding.Default.GetString(byteData);
+                    }
+                    catch
+                    {
+                        // 作为最后的尝试，使用Latin1编码
+                        return Encoding.GetEncoding("Latin1").GetString(byteData);
+                    }
                 }
             }
         }
