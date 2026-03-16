@@ -261,8 +261,8 @@ namespace MemoryHelper
                 return IntPtr.Zero;
 
             float floatValue = BytesToFloat(bytesArray);
-            Console.WriteLine($"人物偏转角地址: {dihzi}");
-            Console.WriteLine($"人物偏转角值: {floatValue}");
+            // 这个方法在Windows Forms应用程序中不再直接输出到控制台
+            // 而是通过Form1中的AddOutput方法显示在UI中
             return dihzi;
         }
 
@@ -357,17 +357,8 @@ namespace MemoryHelper
         public static void EnumMilkWindows1()
         {
             List<WindowInfo> windows = EnumMilkWindows();
-            Console.WriteLine(new string('=', 60));
-            Console.WriteLine("窗口句柄\t\t人物名称\t\t窗口标题\t\t进程ID");
-
-
-
-
-            foreach (var window in windows)
-            {
-                Console.WriteLine($"{window.Hwnd.ToInt64():<8}\t{window.Name:<10}\t{window.Title:<15}\t{window.ProcessId}");
-            }
-            Console.WriteLine(new string('=', 60));
+            // 这个方法在Windows Forms应用程序中不再直接输出到控制台
+            // 而是通过Form1中的AddOutput方法显示在UI中
         }
 
         // 选中人物
@@ -481,14 +472,8 @@ namespace MemoryHelper
                     WriteProcessMemory(processId.Value, address, "90 90");
                 }
 
-                if (miaokuangjindu == 0)
-                {
-                    Console.WriteLine($"《{name}》秒矿已关闭");
-                }
-                else
-                {
-                    Console.WriteLine($"《{name}》秒矿已开启：{miaokuangjindu}");
-                }
+                // 这个方法在Windows Forms应用程序中不再直接输出到控制台
+                // 而是通过Form1中的AddOutput方法显示在UI中
             }
         }
 
@@ -516,13 +501,13 @@ namespace MemoryHelper
                 if (shifouxiugai != 0)
                 {
                     WriteProcessMemory(processId.Value, address, "D0 07");
-                    Console.WriteLine($"《{name}》秒上坐骑已开启");
                 }
                 else
                 {
                     WriteProcessMemory(processId.Value, address, "E8 03");
-                    Console.WriteLine($"《{name}》秒上坐骑已关闭");
                 }
+                // 这个方法在Windows Forms应用程序中不再直接输出到控制台
+                // 而是通过Form1中的AddOutput方法显示在UI中
             }
         }
     }
