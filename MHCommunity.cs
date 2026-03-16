@@ -910,84 +910,84 @@ namespace MemoryHelper
             Log("[秒上坐骑设置] 所有窗口秒上坐骑设置应用完成");
         }
 
-        // 修改视角锁定（支持冻结模式）
+        // 修改上下俯仰角锁定（支持冻结模式）
         public static void ShijiaoLock(List<Tuple<IntPtr, string>> hwndsNames, float shijiaoValue = 89.5f, bool enable = false, bool freeze = false)
         {
-            Log($"[视角锁定设置] 开始应用视角锁定设置，状态: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}, 冻结: {(freeze ? "是" : "否")}");
+            Log($"[上下俯仰角锁定设置] 开始应用上下俯仰角锁定设置，状态: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}, 冻结: {(freeze ? "是" : "否")}");
             if (hwndsNames == null)
             {
-                Log("[视角锁定设置] 参数无效，跳过");
+                Log("[上下俯仰角锁定设置] 参数无效，跳过");
                 return;
             }
 
             if (freeze && enable)
             {
                 // 冻结模式：添加到冻结列表并启动线程
-                Log("[视角锁定设置] 启用冻结模式");
+                Log("[上下俯仰角锁定设置] 启用冻结模式");
                 AddFreezeLocks(hwndsNames, shijiaoValue);
                 StartFreezeThread();
             }
             else
             {
                 // 非冻结模式：一次性修改
-                Log("[视角锁定设置] 启用一次性修改模式");
+                Log("[上下俯仰角锁定设置] 启用一次性修改模式");
                 RemoveFreezeLocks();
                 StopFreezeThread();
 
                 if (enable)
                 {
-                    Log($"[视角锁定设置] 共有 {hwndsNames.Count} 个窗口需要应用视角锁定设置");
+                    Log($"[上下俯仰角锁定设置] 共有 {hwndsNames.Count} 个窗口需要应用上下俯仰角锁定设置");
                     int windowIndex = 1;
                     foreach (var item in hwndsNames)
                     {
                         IntPtr hwnd = item.Item1;
                         string name = item.Item2;
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
 
                         uint? processId = GetProcessId(hwnd);
                         if (!processId.HasValue)
                         {
-                            Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                            Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
                             continue;
                         }
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
 
                         // 获取 MSVCR120.dll 基址
                         IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "MSVCR120.dll");
                         if (!moduleBase.HasValue)
                         {
-                            Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取 MSVCR120.dll 基址，跳过");
+                            Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取 MSVCR120.dll 基址，跳过");
                             continue;
                         }
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] MSVCR120.dll 基址: {moduleBase.Value.ToString("X8")}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] MSVCR120.dll 基址: {moduleBase.Value.ToString("X8")}");
 
                         // 计算基址 + 偏移量
                         IntPtr baseAddress = moduleBase.Value + 0x000DFE1C;
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 基址 + 偏移: {baseAddress.ToString("X8")}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 基址 + 偏移: {baseAddress.ToString("X8")}");
 
                         // 读取指针值
                         string pointerBytes = ReadProcessMemoryAsString(processId.Value, baseAddress, 4);
                         if (pointerBytes == null)
                         {
-                            Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 读取指针失败，跳过");
+                            Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 读取指针失败，跳过");
                             continue;
                         }
                         uint pointerValue = BytesToInt(pointerBytes);
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 指针值: {pointerValue.ToString("X8")}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 指针值: {pointerValue.ToString("X8")}");
 
                         // 计算最终地址
                         IntPtr finalAddress = (IntPtr)(pointerValue + 0x1B0);
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 最终地址: {finalAddress.ToString("X8")}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 最终地址: {finalAddress.ToString("X8")}");
 
-                        // 写入视角锁定值
+                        // 写入上下俯仰角锁定值
                         string shijiaoBytes = FloatToBytes(shijiaoValue);
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 写入视角锁定值: 地址 {finalAddress.ToString("X8")} = {shijiaoBytes}");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 写入上下俯仰角锁定值: 地址 {finalAddress.ToString("X8")} = {shijiaoBytes}");
                         WriteProcessMemoryWithBackup(processId.Value, finalAddress, shijiaoBytes, 4);
 
-                        Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 视角锁定设置应用完成");
+                        Log($"[上下俯仰角锁定设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 上下俯仰角锁定设置应用完成");
                         windowIndex++;
                     }
-                    Log("[视角锁定设置] 所有窗口视角锁定设置应用完成");
+                    Log("[上下俯仰角锁定设置] 所有窗口上下俯仰角锁定设置应用完成");
                 }
             }
         }
@@ -995,7 +995,7 @@ namespace MemoryHelper
         // 添加冻结锁定
         private static void AddFreezeLocks(List<Tuple<IntPtr, string>> hwndsNames, float shijiaoValue)
         {
-            Log("[冻结锁定] 添加冻结锁定...");
+            Log("[上下俯仰角冻结锁定] 添加冻结锁定...");
             RemoveFreezeLocks();
 
             foreach (var item in hwndsNames)
@@ -1006,7 +1006,7 @@ namespace MemoryHelper
                 uint? processId = GetProcessId(hwnd);
                 if (!processId.HasValue)
                 {
-                    Log($"[冻结锁定] 窗口 {name} 无法获取进程ID，跳过");
+                    Log($"[上下俯仰角冻结锁定] 窗口 {name} 无法获取进程ID，跳过");
                     continue;
                 }
 
@@ -1014,7 +1014,7 @@ namespace MemoryHelper
                 IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "MSVCR120.dll");
                 if (!moduleBase.HasValue)
                 {
-                    Log($"[冻结锁定] 窗口 {name} 无法获取 MSVCR120.dll 基址，跳过");
+                    Log($"[上下俯仰角冻结锁定] 窗口 {name} 无法获取 MSVCR120.dll 基址，跳过");
                     continue;
                 }
 
@@ -1025,7 +1025,7 @@ namespace MemoryHelper
                 string pointerBytes = ReadProcessMemoryAsString(processId.Value, baseAddress, 4);
                 if (pointerBytes == null)
                 {
-                    Log($"[冻结锁定] 窗口 {name} 读取指针失败，跳过");
+                    Log($"[上下俯仰角冻结锁定] 窗口 {name} 读取指针失败，跳过");
                     continue;
                 }
                 uint pointerValue = BytesToInt(pointerBytes);
@@ -1043,7 +1043,7 @@ namespace MemoryHelper
                     IsActive = true
                 };
                 freezeLocks.Add(lockItem);
-                Log($"[冻结锁定] 添加窗口 {name} 的冻结锁定: 地址 {finalAddress.ToString("X8")} = {shijiaoBytes}");
+                Log($"[上下俯仰角冻结锁定] 添加窗口 {name} 的冻结锁定: 地址 {finalAddress.ToString("X8")} = {shijiaoBytes}");
             }
         }
 
@@ -1052,7 +1052,7 @@ namespace MemoryHelper
         {
             if (freezeLocks.Count > 0)
             {
-                Log("[冻结锁定] 移除所有冻结锁定");
+                Log("[上下俯仰角冻结锁定] 移除所有冻结锁定");
                 freezeLocks.Clear();
             }
         }
@@ -1062,7 +1062,7 @@ namespace MemoryHelper
         {
             if (!freezeThreadRunning)
             {
-                Log("[冻结锁定] 启动冻结线程");
+                Log("[上下俯仰角冻结锁定] 启动冻结线程");
                 freezeThreadRunning = true;
                 freezeThread = new Thread(FreezeThreadLoop);
                 freezeThread.IsBackground = true;
@@ -1075,7 +1075,7 @@ namespace MemoryHelper
         {
             if (freezeThreadRunning)
             {
-                Log("[冻结锁定] 停止冻结线程");
+                Log("[上下俯仰角冻结锁定] 停止冻结线程");
                 freezeThreadRunning = false;
                 if (freezeThread != null && freezeThread.IsAlive)
                 {
@@ -1087,7 +1087,7 @@ namespace MemoryHelper
         // 冻结线程循环
         private static void FreezeThreadLoop()
         {
-            Log("[冻结锁定] 冻结线程开始运行");
+            Log("[上下俯仰角冻结锁定] 冻结线程开始运行");
             while (freezeThreadRunning)
             {
                 try
@@ -1103,10 +1103,10 @@ namespace MemoryHelper
                 }
                 catch (Exception ex)
                 {
-                    Log($"[冻结锁定] 发生错误: {ex.Message}");
+                    Log($"[上下俯仰角冻结锁定] 发生错误: {ex.Message}");
                 }
             }
-            Log("[冻结锁定] 冻结线程已停止");
+            Log("[上下俯仰角冻结锁定] 冻结线程已停止");
         }
     }
 

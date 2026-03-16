@@ -261,17 +261,17 @@ namespace MemoryHelper
             restoreButton.Click += RestoreButton_Click;
             bottomTablePanel.Controls.Add(restoreButton, 4, 1);
 
-            // 第三行：视角锁定设置
-            // 视角锁定复选框
+            // 第三行：上下俯仰角设置
+            // 上下俯仰角复选框
             CheckBox shijiaoCheckBox = new CheckBox();
             shijiaoCheckBox.Name = "shijiaoCheckBox";
-            shijiaoCheckBox.Text = "开启视角锁定";
+            shijiaoCheckBox.Text = "开启上下俯仰角锁定";
             shijiaoCheckBox.Dock = DockStyle.Fill;
             shijiaoCheckBox.TextAlign = ContentAlignment.MiddleLeft;
             shijiaoCheckBox.Margin = new Padding(0, 5, 5, 5);
             bottomTablePanel.Controls.Add(shijiaoCheckBox, 0, 2);
 
-            // 视角锁定值输入
+            // 上下俯仰角值输入
             TextBox shijiaoInput = new TextBox();
             shijiaoInput.Name = "shijiaoInput";
             shijiaoInput.Dock = DockStyle.Fill;
@@ -279,9 +279,9 @@ namespace MemoryHelper
             shijiaoInput.Margin = new Padding(5, 5, 5, 5);
             bottomTablePanel.Controls.Add(shijiaoInput, 1, 2);
 
-            // 应用视角锁定按钮
+            // 应用上下俯仰角按钮
             Button shijiaoButton = new Button();
-            shijiaoButton.Text = "应用视角锁定";
+            shijiaoButton.Text = "应用上下俯仰角锁定";
             shijiaoButton.Dock = DockStyle.Fill;
             shijiaoButton.Margin = new Padding(5, 5, 5, 5);
             shijiaoButton.Click += ShijiaoButton_Click;
@@ -510,13 +510,13 @@ namespace MemoryHelper
 
             if (float.TryParse(shijiaoInput.Text, out shijiaoValue))
             {
-                AddOutput($"正在应用视角锁定设置: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}, 冻结: {(freeze ? "是" : "否")}");
+                AddOutput($"正在应用上下俯仰角锁定设置: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}, 冻结: {(freeze ? "是" : "否")}");
                 MemoryTools.ShijiaoLock(selectedWindows, shijiaoValue, enable, freeze);
-                AddOutput("视角锁定设置已应用");
+                AddOutput("上下俯仰角锁定设置已应用");
             }
             else
             {
-                AddOutput("请输入有效的视角锁定值");
+                AddOutput("请输入有效的上下俯仰角锁定值");
             }
         }
 
