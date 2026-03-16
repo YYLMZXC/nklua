@@ -56,10 +56,11 @@ namespace MemoryHelper
         private void InitializeUI()
         {
             this.Text = "梦幻社区";
-            this.Size = new System.Drawing.Size(800, 550); // 进一步增加表单大小以适应更大的间距
+            this.Size = new System.Drawing.Size(1200, 800); // 大幅增加窗体大小
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.Sizable; // 允许调整大小
+            this.MaximizeBox = true; // 允许最大化
+            this.MinimumSize = new System.Drawing.Size(800, 550); // 设置最小尺寸
 
             // 创建UI元素
             CreateControls();
@@ -75,11 +76,11 @@ namespace MemoryHelper
             mainPanel.Dock = DockStyle.Fill;
             mainPanel.ColumnCount = 2;
             mainPanel.RowCount = 3;
-            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
+            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35)); // 窗口列表占35%
+            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65)); // 日志界面占65%
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 70)); // 主界面区域70%
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20)); // 设置区域20%
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // 底部预留10%
             this.Controls.Add(mainPanel);
 
             // 左侧面板 - 使用嵌套的TableLayoutPanel
