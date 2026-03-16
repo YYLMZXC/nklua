@@ -9,6 +9,17 @@ namespace MemoryHelper
 {
     public class MemoryTools
     {
+        // 日志事件定义
+        public delegate void LogEventHandler(string message);
+        public static event LogEventHandler OnLog;
+
+        // 辅助方法：输出日志
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+            OnLog?.Invoke(message);
+        }
+
         // 保存原始内存数据的结构
         private struct MemoryBackup
         {
@@ -232,14 +243,17 @@ namespace MemoryHelper
             if (!memoryBackups.ContainsKey(processId))
             {
                 memoryBackups[processId] = new List<MemoryBackup>();
+                Log($"[内存备份] 为进程 {processId} 创建新的备份列表");
             }
 
             // 检查是否已经备份过这个地址
             if (memoryBackups[processId].Any(b => b.Address == address))
             {
+                Log($"[内存备份] 地址 {address.ToString("X8")} 已存在备份，跳过");
                 return;
             }
 
+            Log($"[内存备份] 正在读取进程 {processId} 地址 {address.ToString("X8")} 的原始内存 (大小: {size} 字节)");
             string originalBytes = ReadProcessMemoryAsString(processId, address, size);
             if (originalBytes != null)
             {
@@ -249,45 +263,77 @@ namespace MemoryHelper
                     OriginalBytes = originalBytes,
                     Size = size
                 });
+                Log($"[内存备份] 成功保存原始内存: 地址 {address.ToString("X8")} = {originalBytes}");
+            }
+            else
+            {
+                Log($"[内存备份] 读取原始内存失败: 地址 {address.ToString("X8")}");
             }
         }
 
         // 恢复原始内存数据
         public static bool RestoreOriginalMemory(uint processId)
         {
+            Log($"[内存还原] 开始还原进程 {processId} 的内存");
             if (!memoryBackups.ContainsKey(processId))
             {
+                Log($"[内存还原] 进程 {processId} 没有找到备份数据");
                 return false;
             }
 
+            Log($"[内存还原] 进程 {processId} 共有 {memoryBackups[processId].Count} 个内存区域需要还原");
             bool success = true;
+            int index = 1;
             foreach (var backup in memoryBackups[processId])
             {
-                if (!WriteProcessMemory(processId, backup.Address, backup.OriginalBytes))
+                Log($"[内存还原] [{index}/{memoryBackups[processId].Count}] 正在还原地址 {backup.Address.ToString("X8")} 到原始值: {backup.OriginalBytes}");
+                if (WriteProcessMemory(processId, backup.Address, backup.OriginalBytes))
                 {
+                    Log($"[内存还原] [{index}/{memoryBackups[processId].Count}] 成功还原地址 {backup.Address.ToString("X8")}");
+                }
+                else
+                {
+                    Log($"[内存还原] [{index}/{memoryBackups[processId].Count}] 还原地址 {backup.Address.ToString("X8")} 失败");
                     success = false;
                 }
+                index++;
             }
 
             memoryBackups.Remove(processId);
+            Log($"[内存还原] 进程 {processId} 还原完成，结果: {(success ? "成功" : "部分失败")}");
             return success;
         }
 
         // 恢复所有进程的原始内存数据
         public static void RestoreAllMemory(List<Tuple<IntPtr, string>> hwndsNames)
         {
+            Log("[内存还原] 开始还原所有选中窗口的内存");
             if (hwndsNames == null)
+            {
+                Log("[内存还原] 没有选中任何窗口");
                 return;
+            }
 
+            Log($"[内存还原] 共有 {hwndsNames.Count} 个窗口需要还原");
+            int index = 1;
             foreach (var item in hwndsNames)
             {
                 IntPtr hwnd = item.Item1;
+                string name = item.Item2;
+                Log($"[内存还原] [{index}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
                 uint? processId = GetProcessId(hwnd);
                 if (processId.HasValue)
                 {
+                    Log($"[内存还原] [{index}/{hwndsNames.Count}] 获取到进程ID: {processId.Value}");
                     RestoreOriginalMemory(processId.Value);
                 }
+                else
+                {
+                    Log($"[内存还原] [{index}/{hwndsNames.Count}] 无法获取进程ID");
+                }
+                index++;
             }
+            Log("[内存还原] 所有窗口还原操作完成");
         }
 
         // 向指定进程的指定地址写入字节数组（带备份功能）
@@ -511,65 +557,102 @@ namespace MemoryHelper
         // 修改秒矿
         public static void Miaokuang(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangjindu = 0)
         {
+            Log($"[秒矿设置] 开始应用秒矿设置，进度值: {miaokuangjindu}");
             if (hwndsNames == null || miaokuangjindu == 0)
+            {
+                Log("[秒矿设置] 参数无效，跳过");
                 return;
+            }
 
+            Log($"[秒矿设置] 共有 {hwndsNames.Count} 个窗口需要应用秒矿设置");
+            int windowIndex = 1;
             foreach (var item in hwndsNames)
             {
                 IntPtr hwnd = item.Item1;
                 string name = item.Item2;
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
 
                 uint? processId = GetProcessId(hwnd);
                 if (!processId.HasValue)
+                {
+                    Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
                     continue;
+                }
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
 
                 IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
                 if (!moduleBase.HasValue)
+                {
+                    Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
                     continue;
+                }
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
 
                 // 修改初始进度
                 IntPtr address = moduleBase.Value + 0x4CF4B1 + 3;
                 string bytesArrayMiaokuangjindu = FloatToBytes(miaokuangjindu);
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [1/3] 修改初始进度: 地址 {address.ToString("X8")} = {bytesArrayMiaokuangjindu}");
                 WriteProcessMemoryWithBackup(processId.Value, address, bytesArrayMiaokuangjindu, 4);
 
                 // 修改秒矿间隔
                 address = moduleBase.Value + 0x3921D8;
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [2/3] 修改秒矿间隔: 地址 {address.ToString("X8")} = 90 90 90 90");
                 WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90 90", 4);
 
                 // 删除秒矿间隔
                 address = moduleBase.Value + 0x4CCB39;
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [3/3] 删除秒矿间隔: 地址 {address.ToString("X8")} = 90 90");
                 WriteProcessMemoryWithBackup(processId.Value, address, "90 90", 2);
 
-                // 这个方法在Windows Forms应用程序中不再直接输出到控制台
-                // 而是通过Form1中的AddOutput方法显示在UI中
+                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿设置应用完成");
+                windowIndex++;
             }
+            Log("[秒矿设置] 所有窗口秒矿设置应用完成");
         }
 
         // 修改秒上坐骑
         public static void Miaoshangzuoqi(List<Tuple<IntPtr, string>> hwndsNames, int shifouxiugai = 0)
         {
+            Log($"[秒上坐骑设置] 开始应用秒上坐骑设置，状态: {(shifouxiugai == 1 ? "开启" : "关闭")}");
             if (hwndsNames == null || shifouxiugai == 0)
+            {
+                Log("[秒上坐骑设置] 参数无效，跳过");
                 return;
+            }
 
+            Log($"[秒上坐骑设置] 共有 {hwndsNames.Count} 个窗口需要应用秒上坐骑设置");
+            int windowIndex = 1;
             foreach (var item in hwndsNames)
             {
                 IntPtr hwnd = item.Item1;
                 string name = item.Item2;
+                Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
 
                 uint? processId = GetProcessId(hwnd);
                 if (!processId.HasValue)
+                {
+                    Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
                     continue;
+                }
+                Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
 
                 IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
                 if (!moduleBase.HasValue)
+                {
+                    Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
                     continue;
+                }
+                Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
 
                 // 修改初始进度
                 IntPtr address = moduleBase.Value + 0x701299;
+                Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 修改秒上坐骑: 地址 {address.ToString("X8")} = D0 07");
                 WriteProcessMemoryWithBackup(processId.Value, address, "D0 07", 2);
-                // 这个方法在Windows Forms应用程序中不再直接输出到控制台
-                // 而是通过Form1中的AddOutput方法显示在UI中
+
+                Log($"[秒上坐骑设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒上坐骑设置应用完成");
+                windowIndex++;
             }
+            Log("[秒上坐骑设置] 所有窗口秒上坐骑设置应用完成");
         }
     }
 

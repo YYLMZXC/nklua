@@ -17,7 +17,22 @@ namespace MemoryHelper
 
         public MainScreen()
         {
+            // 订阅日志事件
+            MemoryTools.OnLog += MemoryTools_OnLog;
             InitializeUI();
+        }
+
+        private void MemoryTools_OnLog(string message)
+        {
+            // 确保在UI线程上更新
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => AddOutput(message)));
+            }
+            else
+            {
+                AddOutput(message);
+            }
         }
 
         private void InitializeUI()
@@ -205,6 +220,11 @@ namespace MemoryHelper
             TextBox outputTextBox = (TextBox)this.Controls.Find("outputTextBox", true)[0];
             outputTextBox.AppendText($"[{DateTime.Now.ToString("HH:mm:ss")}] {message}\r\n");
             outputTextBox.ScrollToCaret();
+        }
+
+        private void AddDetailedLog(string prefix, string message)
+        {
+            AddOutput($"[{prefix}] {message}");
         }
 
         private void RefreshButton_Click(object sender, EventArgs e)
