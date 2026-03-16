@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <None Include="py.py" />
     <None Include="README.md" />
     <None Include="requirements.txt" />
+    <None Include="app.manifest" />
   </ItemGroup>
 
 </Project>
