@@ -169,10 +169,11 @@ namespace MemoryHelper
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
             bottomTablePanel.Padding = new Padding(20);
             mainPanel.Controls.Add(bottomTablePanel, 0, 1);
             mainPanel.SetColumnSpan(bottomTablePanel, 2);
@@ -288,7 +289,34 @@ namespace MemoryHelper
             bottomTablePanel.Controls.Add(shijiaoButton, 2, 2);
             bottomTablePanel.SetColumnSpan(shijiaoButton, 3);
 
-            // 第四行：冻结锁定设置
+            // 第四行：左右偏转角设置
+            // 左右偏转角复选框
+            CheckBox zuoyouCheckBox = new CheckBox();
+            zuoyouCheckBox.Name = "zuoyouCheckBox";
+            zuoyouCheckBox.Text = "开启左右偏转角锁定";
+            zuoyouCheckBox.Dock = DockStyle.Fill;
+            zuoyouCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            zuoyouCheckBox.Margin = new Padding(0, 5, 5, 5);
+            bottomTablePanel.Controls.Add(zuoyouCheckBox, 0, 3);
+
+            // 左右偏转角值输入
+            TextBox zuoyouInput = new TextBox();
+            zuoyouInput.Name = "zuoyouInput";
+            zuoyouInput.Dock = DockStyle.Fill;
+            zuoyouInput.Text = "265.1999817";
+            zuoyouInput.Margin = new Padding(5, 5, 5, 5);
+            bottomTablePanel.Controls.Add(zuoyouInput, 1, 3);
+
+            // 应用左右偏转角按钮
+            Button zuoyouButton = new Button();
+            zuoyouButton.Text = "应用左右偏转角锁定";
+            zuoyouButton.Dock = DockStyle.Fill;
+            zuoyouButton.Margin = new Padding(5, 5, 5, 5);
+            zuoyouButton.Click += ZuoyouButton_Click;
+            bottomTablePanel.Controls.Add(zuoyouButton, 2, 3);
+            bottomTablePanel.SetColumnSpan(zuoyouButton, 3);
+
+            // 第五行：冻结锁定设置
             // 冻结锁定复选框
             CheckBox freezeCheckBox = new CheckBox();
             freezeCheckBox.Name = "freezeCheckBox";
@@ -296,7 +324,7 @@ namespace MemoryHelper
             freezeCheckBox.Dock = DockStyle.Fill;
             freezeCheckBox.TextAlign = ContentAlignment.MiddleLeft;
             freezeCheckBox.Margin = new Padding(0, 5, 5, 5);
-            bottomTablePanel.Controls.Add(freezeCheckBox, 0, 3);
+            bottomTablePanel.Controls.Add(freezeCheckBox, 0, 4);
             bottomTablePanel.SetColumnSpan(freezeCheckBox, 5);
         }
 
@@ -520,6 +548,33 @@ namespace MemoryHelper
             }
         }
 
+        private void ZuoyouButton_Click(object sender, EventArgs e)
+        {
+            if (selectedWindows == null || selectedWindows.Count == 0)
+            {
+                AddOutput("请先选择窗口");
+                return;
+            }
+
+            CheckBox zuoyouCheckBox = (CheckBox)this.Controls.Find("zuoyouCheckBox", true)[0];
+            TextBox zuoyouInput = (TextBox)this.Controls.Find("zuoyouInput", true)[0];
+            CheckBox freezeCheckBox = (CheckBox)this.Controls.Find("freezeCheckBox", true)[0];
+            bool enable = zuoyouCheckBox.Checked;
+            bool freeze = freezeCheckBox.Checked;
+            float zuoyouValue = 265.1999817f;
+
+            if (float.TryParse(zuoyouInput.Text, out zuoyouValue))
+            {
+                AddOutput($"正在应用左右偏转角锁定设置: {(enable ? "开启" : "关闭")}, 值: {zuoyouValue}, 冻结: {(freeze ? "是" : "否")}");
+                MemoryTools.ZuoyouLock(selectedWindows, zuoyouValue, enable, freeze);
+                AddOutput("左右偏转角锁定设置已应用");
+            }
+            else
+            {
+                AddOutput("请输入有效的左右偏转角锁定值");
+            }
+        }
+
         private void ClearOutputButton_Click(object sender, EventArgs e)
         {
             TextBox outputTextBox = (TextBox)this.Controls.Find("outputTextBox", true)[0];
@@ -565,6 +620,12 @@ namespace MemoryHelper
 
             TextBox shijiaoInput = (TextBox)this.Controls.Find("shijiaoInput", true)[0];
             shijiaoInput.Text = "89.5";
+
+            CheckBox zuoyouCheckBox = (CheckBox)this.Controls.Find("zuoyouCheckBox", true)[0];
+            zuoyouCheckBox.Checked = false;
+
+            TextBox zuoyouInput = (TextBox)this.Controls.Find("zuoyouInput", true)[0];
+            zuoyouInput.Text = "265.1999817";
 
             CheckBox freezeCheckBox = (CheckBox)this.Controls.Find("freezeCheckBox", true)[0];
             freezeCheckBox.Checked = false;
