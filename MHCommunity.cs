@@ -57,6 +57,11 @@ namespace MemoryHelper
         [DllImport("psapi.dll", SetLastError = true)]
         private static extern bool EnumProcessModules(IntPtr hProcess, IntPtr[] lphModule, uint cb, out uint lpcbNeeded);
 
+        [DllImport("psapi.dll", SetLastError = true)]
+        private static extern bool EnumProcessModulesEx(IntPtr hProcess, IntPtr[] lphModule, uint cb, out uint lpcbNeeded, uint dwFilterFlag);
+
+        private const uint LIST_MODULES_ALL = 0x03;
+
         [DllImport("psapi.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern uint GetModuleBaseName(IntPtr hProcess, IntPtr hModule, StringBuilder lpBaseName, uint nSize);
 
@@ -92,9 +97,13 @@ namespace MemoryHelper
         // 获取指定进程中指定模块的基址
         public static IntPtr? GetModuleBaseAddress(uint processId, string moduleName)
         {
+            Log($"[模块查找] 开始查找进程 {processId} 中的模块: {moduleName}");
             IntPtr hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, processId);
             if (hProcess == IntPtr.Zero)
+            {
+                Log($"[模块查找] 无法打开进程 {processId}，错误码: {Marshal.GetLastWin32Error()}");
                 return null;
+            }
 
             try
             {
@@ -102,18 +111,54 @@ namespace MemoryHelper
                 IntPtr[] hModules = new IntPtr[MAX_MODULES];
                 uint cbNeeded;
 
-                if (EnumProcessModules(hProcess, hModules, (uint)(hModules.Length * IntPtr.Size), out cbNeeded))
+                Log($"[模块查找] 尝试使用 EnumProcessModulesEx 枚举所有模块...");
+                if (EnumProcessModulesEx(hProcess, hModules, (uint)(hModules.Length * IntPtr.Size), out cbNeeded, LIST_MODULES_ALL))
                 {
                     int modulesCount = (int)(cbNeeded / (uint)IntPtr.Size);
+                    Log($"[模块查找] 成功枚举到 {modulesCount} 个模块");
                     StringBuilder moduleNameBuffer = new StringBuilder(260);
 
                     for (int i = 0; i < modulesCount; i++)
                     {
                         if (GetModuleBaseName(hProcess, hModules[i], moduleNameBuffer, (uint)moduleNameBuffer.Capacity) > 0)
                         {
-                            if (moduleNameBuffer.ToString().ToLower() == moduleName.ToLower())
+                            string currentModuleName = moduleNameBuffer.ToString();
+                            Log($"[模块查找] 模块 {i}: {currentModuleName} (基址: {hModules[i].ToString("X8")})");
+                            if (currentModuleName.ToLower() == moduleName.ToLower())
+                            {
+                                Log($"[模块查找] 找到目标模块: {currentModuleName}，基址: {hModules[i].ToString("X8")}");
                                 return hModules[i];
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    Log($"[模块查找] EnumProcessModulesEx 失败，错误码: {Marshal.GetLastWin32Error()}");
+                    Log($"[模块查找] 尝试使用 EnumProcessModules 作为备选...");
+                    if (EnumProcessModules(hProcess, hModules, (uint)(hModules.Length * IntPtr.Size), out cbNeeded))
+                    {
+                        int modulesCount = (int)(cbNeeded / (uint)IntPtr.Size);
+                        Log($"[模块查找] 成功枚举到 {modulesCount} 个模块");
+                        StringBuilder moduleNameBuffer = new StringBuilder(260);
+
+                        for (int i = 0; i < modulesCount; i++)
+                        {
+                            if (GetModuleBaseName(hProcess, hModules[i], moduleNameBuffer, (uint)moduleNameBuffer.Capacity) > 0)
+                            {
+                                string currentModuleName = moduleNameBuffer.ToString();
+                                Log($"[模块查找] 模块 {i}: {currentModuleName} (基址: {hModules[i].ToString("X8")})");
+                                if (currentModuleName.ToLower() == moduleName.ToLower())
+                                {
+                                    Log($"[模块查找] 找到目标模块: {currentModuleName}，基址: {hModules[i].ToString("X8")}");
+                                    return hModules[i];
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Log($"[模块查找] EnumProcessModules 也失败，错误码: {Marshal.GetLastWin32Error()}");
                     }
                 }
             }
@@ -122,6 +167,7 @@ namespace MemoryHelper
                 CloseHandle(hProcess);
             }
 
+            Log($"[模块查找] 未找到模块: {moduleName}");
             return null;
         }
 
@@ -846,6 +892,77 @@ namespace MemoryHelper
                 windowIndex++;
             }
             Log("[秒上坐骑设置] 所有窗口秒上坐骑设置应用完成");
+        }
+
+        // 修改视角锁定
+        public static void ShijiaoLock(List<Tuple<IntPtr, string>> hwndsNames, float shijiaoValue = 89.5f, bool enable = false)
+        {
+            Log($"[视角锁定设置] 开始应用视角锁定设置，状态: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}");
+            if (hwndsNames == null)
+            {
+                Log("[视角锁定设置] 参数无效，跳过");
+                return;
+            }
+
+            Log($"[视角锁定设置] 共有 {hwndsNames.Count} 个窗口需要应用视角锁定设置");
+            int windowIndex = 1;
+            foreach (var item in hwndsNames)
+            {
+                IntPtr hwnd = item.Item1;
+                string name = item.Item2;
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+
+                uint? processId = GetProcessId(hwnd);
+                if (!processId.HasValue)
+                {
+                    Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                    continue;
+                }
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+
+                // 获取 MSVCR120.dll 基址
+                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "MSVCR120.dll");
+                if (!moduleBase.HasValue)
+                {
+                    Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 无法获取 MSVCR120.dll 基址，跳过");
+                    continue;
+                }
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] MSVCR120.dll 基址: {moduleBase.Value.ToString("X8")}");
+
+                // 计算基址 + 偏移量
+                IntPtr baseAddress = moduleBase.Value + 0x000DFE1C;
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 基址 + 偏移: {baseAddress.ToString("X8")}");
+
+                // 读取指针值
+                string pointerBytes = ReadProcessMemoryAsString(processId.Value, baseAddress, 4);
+                if (pointerBytes == null)
+                {
+                    Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 读取指针失败，跳过");
+                    continue;
+                }
+                uint pointerValue = BytesToInt(pointerBytes);
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 指针值: {pointerValue.ToString("X8")}");
+
+                // 计算最终地址
+                IntPtr finalAddress = (IntPtr)(pointerValue + 0x1B0);
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 最终地址: {finalAddress.ToString("X8")}");
+
+                if (enable)
+                {
+                    // 写入视角锁定值
+                    string shijiaoBytes = FloatToBytes(shijiaoValue);
+                    Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 写入视角锁定值: 地址 {finalAddress.ToString("X8")} = {shijiaoBytes}");
+                    WriteProcessMemoryWithBackup(processId.Value, finalAddress, shijiaoBytes, 4);
+                }
+                else
+                {
+                    Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 视角锁定已关闭，不修改");
+                }
+
+                Log($"[视角锁定设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 视角锁定设置应用完成");
+                windowIndex++;
+            }
+            Log("[视角锁定设置] 所有窗口视角锁定设置应用完成");
         }
     }
 

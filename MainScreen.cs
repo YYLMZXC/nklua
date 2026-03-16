@@ -159,14 +159,15 @@ namespace MemoryHelper
             TableLayoutPanel bottomTablePanel = new TableLayoutPanel();
             bottomTablePanel.Dock = DockStyle.Fill;
             bottomTablePanel.ColumnCount = 5;
-            bottomTablePanel.RowCount = 2;
+            bottomTablePanel.RowCount = 3;
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 34));
             bottomTablePanel.Padding = new Padding(20);
             mainPanel.Controls.Add(bottomTablePanel, 0, 1);
             mainPanel.SetColumnSpan(bottomTablePanel, 2);
@@ -184,14 +185,14 @@ namespace MemoryHelper
             miaokuangInput.Name = "miaokuangInput";
             miaokuangInput.Dock = DockStyle.Fill;
             miaokuangInput.Text = "0.7";
-            miaokuangInput.Margin = new Padding(5, 10, 5, 10);
+            miaokuangInput.Margin = new Padding(5, 5, 5, 5);
             bottomTablePanel.Controls.Add(miaokuangInput, 1, 0);
 
             // 应用秒矿进度按钮
             Button miaokuangJinduButton = new Button();
             miaokuangJinduButton.Text = "应用秒矿进度";
             miaokuangJinduButton.Dock = DockStyle.Fill;
-            miaokuangJinduButton.Margin = new Padding(5, 10, 5, 10);
+            miaokuangJinduButton.Margin = new Padding(5, 5, 5, 5);
             miaokuangJinduButton.Click += MiaokuangJinduButton_Click;
             bottomTablePanel.Controls.Add(miaokuangJinduButton, 2, 0);
 
@@ -201,32 +202,32 @@ namespace MemoryHelper
             miaokuangIntervalCheckBox.Text = "开启秒矿间隔";
             miaokuangIntervalCheckBox.Dock = DockStyle.Fill;
             miaokuangIntervalCheckBox.TextAlign = ContentAlignment.MiddleLeft;
-            miaokuangIntervalCheckBox.Margin = new Padding(5, 10, 5, 10);
+            miaokuangIntervalCheckBox.Margin = new Padding(5, 5, 5, 5);
             bottomTablePanel.Controls.Add(miaokuangIntervalCheckBox, 3, 0);
 
             // 应用秒矿间隔按钮
             Button miaokuangIntervalButton = new Button();
             miaokuangIntervalButton.Text = "应用秒矿间隔";
             miaokuangIntervalButton.Dock = DockStyle.Fill;
-            miaokuangIntervalButton.Margin = new Padding(5, 10, 5, 10);
+            miaokuangIntervalButton.Margin = new Padding(5, 5, 5, 5);
             miaokuangIntervalButton.Click += MiaokuangIntervalButton_Click;
             bottomTablePanel.Controls.Add(miaokuangIntervalButton, 4, 0);
 
-            // 第二行：其他设置
+            // 第二行：快刀和坐骑设置
             // 快刀复选框
             CheckBox kuaidaoCheckBox = new CheckBox();
             kuaidaoCheckBox.Name = "kuaidaoCheckBox";
             kuaidaoCheckBox.Text = "开启快刀";
             kuaidaoCheckBox.Dock = DockStyle.Fill;
             kuaidaoCheckBox.TextAlign = ContentAlignment.MiddleLeft;
-            kuaidaoCheckBox.Margin = new Padding(0, 10, 5, 10);
+            kuaidaoCheckBox.Margin = new Padding(0, 5, 5, 5);
             bottomTablePanel.Controls.Add(kuaidaoCheckBox, 0, 1);
 
             // 应用快刀按钮
             Button kuaidaoButton = new Button();
             kuaidaoButton.Text = "应用快刀";
             kuaidaoButton.Dock = DockStyle.Fill;
-            kuaidaoButton.Margin = new Padding(5, 10, 5, 10);
+            kuaidaoButton.Margin = new Padding(5, 5, 5, 5);
             kuaidaoButton.Click += KuaidaoButton_Click;
             bottomTablePanel.Controls.Add(kuaidaoButton, 1, 1);
 
@@ -236,14 +237,14 @@ namespace MemoryHelper
             zuoqiCheckBox.Text = "开启秒上坐骑";
             zuoqiCheckBox.Dock = DockStyle.Fill;
             zuoqiCheckBox.TextAlign = ContentAlignment.MiddleLeft;
-            zuoqiCheckBox.Margin = new Padding(5, 10, 5, 10);
+            zuoqiCheckBox.Margin = new Padding(5, 5, 5, 5);
             bottomTablePanel.Controls.Add(zuoqiCheckBox, 2, 1);
 
             // 应用坐骑按钮
             Button zuoqiButton = new Button();
             zuoqiButton.Text = "应用坐骑设置";
             zuoqiButton.Dock = DockStyle.Fill;
-            zuoqiButton.Margin = new Padding(5, 10, 5, 10);
+            zuoqiButton.Margin = new Padding(5, 5, 5, 5);
             zuoqiButton.Click += ZuoqiButton_Click;
             bottomTablePanel.Controls.Add(zuoqiButton, 3, 1);
 
@@ -251,9 +252,36 @@ namespace MemoryHelper
             Button restoreButton = new Button();
             restoreButton.Text = "还原所有设置";
             restoreButton.Dock = DockStyle.Fill;
-            restoreButton.Margin = new Padding(5, 10, 0, 10);
+            restoreButton.Margin = new Padding(5, 5, 0, 5);
             restoreButton.Click += RestoreButton_Click;
             bottomTablePanel.Controls.Add(restoreButton, 4, 1);
+
+            // 第三行：视角锁定设置
+            // 视角锁定复选框
+            CheckBox shijiaoCheckBox = new CheckBox();
+            shijiaoCheckBox.Name = "shijiaoCheckBox";
+            shijiaoCheckBox.Text = "开启视角锁定";
+            shijiaoCheckBox.Dock = DockStyle.Fill;
+            shijiaoCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            shijiaoCheckBox.Margin = new Padding(0, 5, 5, 5);
+            bottomTablePanel.Controls.Add(shijiaoCheckBox, 0, 2);
+
+            // 视角锁定值输入
+            TextBox shijiaoInput = new TextBox();
+            shijiaoInput.Name = "shijiaoInput";
+            shijiaoInput.Dock = DockStyle.Fill;
+            shijiaoInput.Text = "89.5";
+            shijiaoInput.Margin = new Padding(5, 5, 5, 5);
+            bottomTablePanel.Controls.Add(shijiaoInput, 1, 2);
+
+            // 应用视角锁定按钮
+            Button shijiaoButton = new Button();
+            shijiaoButton.Text = "应用视角锁定";
+            shijiaoButton.Dock = DockStyle.Fill;
+            shijiaoButton.Margin = new Padding(5, 5, 5, 5);
+            shijiaoButton.Click += ShijiaoButton_Click;
+            bottomTablePanel.Controls.Add(shijiaoButton, 2, 2);
+            bottomTablePanel.SetColumnSpan(shijiaoButton, 3);
         }
 
         private void EnumerateWindows()
@@ -449,6 +477,31 @@ namespace MemoryHelper
             AddOutput("秒上坐骑设置已应用");
         }
 
+        private void ShijiaoButton_Click(object sender, EventArgs e)
+        {
+            if (selectedWindows == null || selectedWindows.Count == 0)
+            {
+                AddOutput("请先选择窗口");
+                return;
+            }
+
+            CheckBox shijiaoCheckBox = (CheckBox)this.Controls.Find("shijiaoCheckBox", true)[0];
+            TextBox shijiaoInput = (TextBox)this.Controls.Find("shijiaoInput", true)[0];
+            bool enable = shijiaoCheckBox.Checked;
+            float shijiaoValue = 89.5f;
+
+            if (float.TryParse(shijiaoInput.Text, out shijiaoValue))
+            {
+                AddOutput($"正在应用视角锁定设置: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}");
+                MemoryTools.ShijiaoLock(selectedWindows, shijiaoValue, enable);
+                AddOutput("视角锁定设置已应用");
+            }
+            else
+            {
+                AddOutput("请输入有效的视角锁定值");
+            }
+        }
+
         private void ClearOutputButton_Click(object sender, EventArgs e)
         {
             TextBox outputTextBox = (TextBox)this.Controls.Find("outputTextBox", true)[0];
@@ -484,6 +537,12 @@ namespace MemoryHelper
 
             CheckBox zuoqiCheckBox = (CheckBox)this.Controls.Find("zuoqiCheckBox", true)[0];
             zuoqiCheckBox.Checked = false;
+
+            CheckBox shijiaoCheckBox = (CheckBox)this.Controls.Find("shijiaoCheckBox", true)[0];
+            shijiaoCheckBox.Checked = false;
+
+            TextBox shijiaoInput = (TextBox)this.Controls.Find("shijiaoInput", true)[0];
+            shijiaoInput.Text = "89.5";
         }
 
 
