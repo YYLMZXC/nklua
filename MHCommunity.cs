@@ -30,6 +30,9 @@ namespace MemoryHelper
 
         // 按进程ID保存的内存备份
         private static Dictionary<uint, List<MemoryBackup>> memoryBackups = new Dictionary<uint, List<MemoryBackup>>();
+        
+        // 保存窗口的原始标题
+        private static Dictionary<IntPtr, string> originalWindowTitles = new Dictionary<IntPtr, string>();
 
         // 进程访问权限常量
         private const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
@@ -304,6 +307,36 @@ namespace MemoryHelper
             return success;
         }
 
+        // 还原窗口标题
+        public static void RestoreWindowTitles(List<Tuple<IntPtr, string>> hwndsNames)
+        {
+            Log("[窗口标题还原] 开始还原窗口标题");
+            if (hwndsNames == null)
+            {
+                Log("[窗口标题还原] 没有选中任何窗口");
+                return;
+            }
+
+            int index = 1;
+            foreach (var item in hwndsNames)
+            {
+                IntPtr hwnd = item.Item1;
+                if (originalWindowTitles.ContainsKey(hwnd))
+                {
+                    string originalTitle = originalWindowTitles[hwnd];
+                    Log($"[窗口标题还原] [{index}/{hwndsNames.Count}] 还原窗口 {hwnd.ToString("X8")} 的标题为: {originalTitle}");
+                    SetWindowText(hwnd, originalTitle);
+                    originalWindowTitles.Remove(hwnd);
+                }
+                else
+                {
+                    Log($"[窗口标题还原] [{index}/{hwndsNames.Count}] 窗口 {hwnd.ToString("X8")} 没有保存的原始标题");
+                }
+                index++;
+            }
+            Log("[窗口标题还原] 窗口标题还原完成");
+        }
+
         // 恢复所有进程的原始内存数据
         public static void RestoreAllMemory(List<Tuple<IntPtr, string>> hwndsNames)
         {
@@ -333,6 +366,10 @@ namespace MemoryHelper
                 }
                 index++;
             }
+            
+            // 还原窗口标题
+            RestoreWindowTitles(hwndsNames);
+            
             Log("[内存还原] 所有窗口还原操作完成");
         }
 
@@ -530,15 +567,25 @@ namespace MemoryHelper
         // 修改奶块窗口标题
         public static void SetMilkWindowTitle()
         {
-            List<Tuple<IntPtr, string>> hwndsNames = SelectPerson("");
-            if (hwndsNames == null)
+            List<WindowInfo> allWindows = EnumMilkWindows();
+            if (allWindows == null)
                 return;
 
+            Log("[窗口标题] 开始修改窗口标题");
+            
             int bianhao = 0;
-            foreach (var item in hwndsNames)
+            foreach (var window in allWindows)
             {
-                IntPtr hwnd = item.Item1;
-                string name = item.Item2;
+                IntPtr hwnd = window.Hwnd;
+                string name = window.Name;
+                string originalTitle = window.Title;
+
+                // 保存原始标题
+                if (!originalWindowTitles.ContainsKey(hwnd))
+                {
+                    originalWindowTitles[hwnd] = originalTitle;
+                    Log($"[窗口标题] 保存窗口 {hwnd.ToString("X8")} 的原始标题: {originalTitle}");
+                }
 
                 string newTitle;
                 if (string.IsNullOrEmpty(name))
@@ -550,6 +597,8 @@ namespace MemoryHelper
                 {
                     newTitle = name;
                 }
+                
+                Log($"[窗口标题] 将窗口 {hwnd.ToString("X8")} 的标题从 '{originalTitle}' 修改为 '{newTitle}'");
                 SetWindowText(hwnd, newTitle);
             }
         }
