@@ -49,47 +49,57 @@ namespace MemoryHelper
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
             this.Controls.Add(mainPanel);
 
-            // 左侧面板 - 窗口列表
-            Panel leftPanel = new Panel();
-            leftPanel.Dock = DockStyle.Fill;
-            leftPanel.Padding = new Padding(20);
-            mainPanel.Controls.Add(leftPanel, 0, 0);
+            // 左侧面板 - 使用嵌套的TableLayoutPanel
+            TableLayoutPanel leftTablePanel = new TableLayoutPanel();
+            leftTablePanel.Dock = DockStyle.Fill;
+            leftTablePanel.ColumnCount = 1;
+            leftTablePanel.RowCount = 2;
+            leftTablePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            leftTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            leftTablePanel.Padding = new Padding(20);
+            mainPanel.Controls.Add(leftTablePanel, 0, 0);
 
             // 窗口列表标签
             Label windowListLabel = new Label();
             windowListLabel.Text = "奶块窗口列表:";
-            windowListLabel.Dock = DockStyle.Top;
-            windowListLabel.AutoSize = true;
-            leftPanel.Controls.Add(windowListLabel);
+            windowListLabel.Dock = DockStyle.Fill;
+            windowListLabel.TextAlign = ContentAlignment.BottomLeft;
+            leftTablePanel.Controls.Add(windowListLabel, 0, 0);
 
             // 窗口列表
             ListBox windowListBox = new ListBox();
             windowListBox.Name = "windowListBox";
             windowListBox.Dock = DockStyle.Fill;
-            windowListBox.Margin = new Padding(0, 10, 0, 0);
-            leftPanel.Controls.Add(windowListBox);
+            windowListBox.Margin = new Padding(0, 5, 0, 0);
+            leftTablePanel.Controls.Add(windowListBox, 0, 1);
 
-            // 右侧面板 - 操作和输出
-            Panel rightPanel = new Panel();
-            rightPanel.Dock = DockStyle.Fill;
-            rightPanel.Padding = new Padding(20);
-            mainPanel.Controls.Add(rightPanel, 1, 0);
+            // 右侧面板 - 使用嵌套的TableLayoutPanel
+            TableLayoutPanel rightTablePanel = new TableLayoutPanel();
+            rightTablePanel.Dock = DockStyle.Fill;
+            rightTablePanel.ColumnCount = 1;
+            rightTablePanel.RowCount = 4;
+            rightTablePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            rightTablePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            rightTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            rightTablePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            rightTablePanel.Padding = new Padding(20);
+            mainPanel.Controls.Add(rightTablePanel, 1, 0);
 
             // 刷新按钮
             Button refreshButton = new Button();
             refreshButton.Text = "刷新窗口";
-            refreshButton.Dock = DockStyle.Top;
-            refreshButton.Margin = new Padding(0, 0, 0, 10);
+            refreshButton.Dock = DockStyle.Fill;
+            refreshButton.Margin = new Padding(0, 0, 0, 5);
             refreshButton.Click += RefreshButton_Click;
-            rightPanel.Controls.Add(refreshButton);
+            rightTablePanel.Controls.Add(refreshButton, 0, 0);
 
             // 选择按钮
             Button selectButton = new Button();
             selectButton.Text = "选择窗口";
-            selectButton.Dock = DockStyle.Top;
-            selectButton.Margin = new Padding(0, 0, 0, 10);
+            selectButton.Dock = DockStyle.Fill;
+            selectButton.Margin = new Padding(0, 0, 0, 5);
             selectButton.Click += SelectButton_Click;
-            rightPanel.Controls.Add(selectButton);
+            rightTablePanel.Controls.Add(selectButton, 0, 1);
 
             // 输出文本框
             TextBox outputTextBox = new TextBox();
@@ -98,16 +108,15 @@ namespace MemoryHelper
             outputTextBox.Multiline = true;
             outputTextBox.ReadOnly = true;
             outputTextBox.ScrollBars = ScrollBars.Vertical;
-            outputTextBox.Margin = new Padding(0, 10, 0, 0);
-            rightPanel.Controls.Add(outputTextBox);
+            outputTextBox.Margin = new Padding(0, 0, 0, 5);
+            rightTablePanel.Controls.Add(outputTextBox, 0, 2);
 
             // 清空输出按钮
             Button clearOutputButton = new Button();
             clearOutputButton.Text = "清空输出";
-            clearOutputButton.Dock = DockStyle.Bottom;
-            clearOutputButton.Margin = new Padding(0, 10, 0, 0);
+            clearOutputButton.Dock = DockStyle.Fill;
             clearOutputButton.Click += ClearOutputButton_Click;
-            rightPanel.Controls.Add(clearOutputButton);
+            rightTablePanel.Controls.Add(clearOutputButton, 0, 3);
 
             // 底部面板 - 秒矿和坐骑设置
             Panel bottomPanel = new Panel();
