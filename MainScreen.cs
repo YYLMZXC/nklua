@@ -124,6 +124,8 @@ namespace MemoryHelper
             outputTextBox.ReadOnly = true;
             outputTextBox.ScrollBars = ScrollBars.Vertical;
             outputTextBox.Margin = new Padding(0, 0, 0, 5);
+            outputTextBox.MaxLength = 0; // 0表示无限制
+            outputTextBox.WordWrap = false; // 不自动换行
             rightTablePanel.Controls.Add(outputTextBox, 0, 2);
 
             // 清空输出按钮
@@ -218,7 +220,17 @@ namespace MemoryHelper
         private void AddOutput(string message)
         {
             TextBox outputTextBox = (TextBox)this.Controls.Find("outputTextBox", true)[0];
-            outputTextBox.AppendText($"[{DateTime.Now.ToString("HH:mm:ss")}] {message}\r\n");
+            // 如果消息已经包含时间戳，就不再添加
+            if (!message.StartsWith("["))
+            {
+                outputTextBox.AppendText($"[{DateTime.Now.ToString("HH:mm:ss")}] {message}\r\n");
+            }
+            else
+            {
+                outputTextBox.AppendText(message + "\r\n");
+            }
+            // 滚动到底部
+            outputTextBox.SelectionStart = outputTextBox.Text.Length;
             outputTextBox.ScrollToCaret();
         }
 
