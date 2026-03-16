@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.VisualBasic;
 
 namespace MemoryHelper
 {
@@ -302,22 +303,78 @@ namespace MemoryHelper
             ListBox windowListBox = (ListBox)this.Controls.Find("windowListBox", true)[0];
             int selectedIndex = windowListBox.SelectedIndex;
 
+            // 计算输入框的居中位置
+            int inputBoxWidth = 300;
+            int inputBoxHeight = 150;
+            int xPos = this.Left + (this.Width - inputBoxWidth) / 2;
+            int yPos = this.Top + (this.Height - inputBoxHeight) / 2;
+
             if (selectedIndex >= 0 && selectedIndex < allWindows.Count)
             {
                 var selectedWindow = allWindows[selectedIndex];
+                string playerName = selectedWindow.Name;
+                
+                // 如果名称为空，让用户输入
+                if (string.IsNullOrEmpty(playerName))
+                {
+                    string inputName = Microsoft.VisualBasic.Interaction.InputBox(
+                        "请输入人物名称:", 
+                        "输入人物名称", 
+                        "", 
+                        xPos, 
+                        yPos);
+                    
+                    if (!string.IsNullOrEmpty(inputName))
+                    {
+                        playerName = inputName;
+                        AddOutput($"已为窗口 {selectedWindow.Title} 设置名称: {playerName}");
+                    }
+                    else
+                    {
+                        AddOutput("取消输入，使用默认名称");
+                    }
+                }
+                
                 selectedWindows = new List<Tuple<IntPtr, string>>();
-                selectedWindows.Add(Tuple.Create(selectedWindow.Hwnd, selectedWindow.Name));
-                AddOutput($"已选择窗口: {selectedWindow.Name} - {selectedWindow.Title}");
+                selectedWindows.Add(Tuple.Create(selectedWindow.Hwnd, playerName));
+                AddOutput($"已选择窗口: {playerName} - {selectedWindow.Title}");
             }
             else
             {
                 // 选择所有窗口
-                selectedWindows = allWindows.Select(w => Tuple.Create(w.Hwnd, w.Name)).ToList();
+                selectedWindows = new List<Tuple<IntPtr, string>>();
+                foreach (var window in allWindows)
+                {
+                    string playerName = window.Name;
+                    
+                    // 如果名称为空，让用户输入
+                    if (string.IsNullOrEmpty(playerName))
+                    {
+                        string inputName = Microsoft.VisualBasic.Interaction.InputBox(
+                            $"请输入窗口 {window.Title} 的人物名称:", 
+                            "输入人物名称", 
+                            "", 
+                            xPos, 
+                            yPos);
+                        
+                        if (!string.IsNullOrEmpty(inputName))
+                        {
+                            playerName = inputName;
+                            AddOutput($"已为窗口 {window.Title} 设置名称: {playerName}");
+                        }
+                        else
+                        {
+                            AddOutput($"取消输入，窗口 {window.Title} 使用默认名称");
+                        }
+                    }
+                    
+                    selectedWindows.Add(Tuple.Create(window.Hwnd, playerName));
+                }
                 AddOutput("已选择所有窗口");
             }
 
-            // 修改窗口标题
-            MemoryTools.SetMilkWindowTitle();
+            // 修改窗口标题，传入包含用户输入名称的窗口列表
+            MemoryTools.SetMilkWindowTitle(selectedWindows);
             AddOutput("已更新窗口标题");
         }
 

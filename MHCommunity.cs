@@ -565,41 +565,76 @@ namespace MemoryHelper
         }
 
         // 修改奶块窗口标题
-        public static void SetMilkWindowTitle()
+        public static void SetMilkWindowTitle(List<Tuple<IntPtr, string>> hwndsNames = null)
         {
-            List<WindowInfo> allWindows = EnumMilkWindows();
-            if (allWindows == null)
-                return;
-
             Log("[窗口标题] 开始修改窗口标题");
             
-            int bianhao = 0;
-            foreach (var window in allWindows)
+            if (hwndsNames == null)
             {
-                IntPtr hwnd = window.Hwnd;
-                string name = window.Name;
-                string originalTitle = window.Title;
+                // 如果没有传入窗口列表，就枚举所有窗口
+                List<WindowInfo> allWindows = EnumMilkWindows();
+                if (allWindows == null)
+                    return;
 
-                // 保存原始标题
-                if (!originalWindowTitles.ContainsKey(hwnd))
+                int bianhao = 0;
+                foreach (var window in allWindows)
                 {
-                    originalWindowTitles[hwnd] = originalTitle;
-                    Log($"[窗口标题] 保存窗口 {hwnd.ToString("X8")} 的原始标题: {originalTitle}");
-                }
+                    IntPtr hwnd = window.Hwnd;
+                    string name = window.Name;
+                    string originalTitle = window.Title;
 
-                string newTitle;
-                if (string.IsNullOrEmpty(name))
-                {
-                    bianhao++;
-                    newTitle = $"未知人物{bianhao}";
+                    // 保存原始标题
+                    if (!originalWindowTitles.ContainsKey(hwnd))
+                    {
+                        originalWindowTitles[hwnd] = originalTitle;
+                        Log($"[窗口标题] 保存窗口 {hwnd.ToString("X8")} 的原始标题: {originalTitle}");
+                    }
+
+                    string newTitle;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        bianhao++;
+                        newTitle = $"未知人物{bianhao}";
+                    }
+                    else
+                    {
+                        newTitle = name;
+                    }
+                    
+                    Log($"[窗口标题] 将窗口 {hwnd.ToString("X8")} 的标题从 '{originalTitle}' 修改为 '{newTitle}'");
+                    SetWindowText(hwnd, newTitle);
                 }
-                else
+            }
+            else
+            {
+                // 使用传入的窗口列表（包含用户输入的名称）
+                foreach (var item in hwndsNames)
                 {
-                    newTitle = name;
+                    IntPtr hwnd = item.Item1;
+                    string name = item.Item2;
+                    
+                    // 获取原始标题
+                    string originalTitle = "";
+                    StringBuilder titleBuilder = new StringBuilder(256);
+                    GetWindowText(hwnd, titleBuilder, titleBuilder.Capacity);
+                    originalTitle = titleBuilder.ToString();
+
+                    // 保存原始标题
+                    if (!originalWindowTitles.ContainsKey(hwnd))
+                    {
+                        originalWindowTitles[hwnd] = originalTitle;
+                        Log($"[窗口标题] 保存窗口 {hwnd.ToString("X8")} 的原始标题: {originalTitle}");
+                    }
+
+                    string newTitle = name;
+                    if (string.IsNullOrEmpty(newTitle))
+                    {
+                        newTitle = originalTitle; // 如果名称为空，保持原样
+                    }
+                    
+                    Log($"[窗口标题] 将窗口 {hwnd.ToString("X8")} 的标题从 '{originalTitle}' 修改为 '{newTitle}'");
+                    SetWindowText(hwnd, newTitle);
                 }
-                
-                Log($"[窗口标题] 将窗口 {hwnd.ToString("X8")} 的标题从 '{originalTitle}' 修改为 '{newTitle}'");
-                SetWindowText(hwnd, newTitle);
             }
         }
 
