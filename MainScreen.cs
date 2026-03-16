@@ -19,7 +19,25 @@ namespace MemoryHelper
         {
             // 订阅日志事件
             MemoryTools.OnLog += MemoryTools_OnLog;
+            // 订阅窗口关闭事件
+            this.FormClosing += MainScreen_FormClosing;
             InitializeUI();
+        }
+
+        private void MainScreen_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            AddOutput("程序正在退出，正在还原所有修改...");
+            
+            // 还原所有内存修改
+            if (selectedWindows != null && selectedWindows.Count > 0)
+            {
+                MemoryTools.RestoreAllMemory(selectedWindows);
+                AddOutput("所有修改已还原，程序即将退出");
+            }
+            else
+            {
+                AddOutput("没有选中窗口，无需还原，程序即将退出");
+            }
         }
 
         private void MemoryTools_OnLog(string message)
