@@ -603,60 +603,169 @@ namespace MemoryHelper
             }
         }
 
-        // 修改秒矿
-        public static void Miaokuang(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangjindu = 0)
+        // 修改秒矿进度
+        public static void MiaokuangJindu(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangjindu = 0)
         {
-            Log($"[秒矿设置] 开始应用秒矿设置，进度值: {miaokuangjindu}");
-            if (hwndsNames == null || miaokuangjindu == 0)
+            Log($"[秒矿进度] 开始应用秒矿进度设置，进度值: {miaokuangjindu}");
+            if (hwndsNames == null)
             {
-                Log("[秒矿设置] 参数无效，跳过");
+                Log("[秒矿进度] 参数无效，跳过");
                 return;
             }
 
-            Log($"[秒矿设置] 共有 {hwndsNames.Count} 个窗口需要应用秒矿设置");
+            Log($"[秒矿进度] 共有 {hwndsNames.Count} 个窗口需要应用秒矿进度设置");
             int windowIndex = 1;
             foreach (var item in hwndsNames)
             {
                 IntPtr hwnd = item.Item1;
                 string name = item.Item2;
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
 
                 uint? processId = GetProcessId(hwnd);
                 if (!processId.HasValue)
                 {
-                    Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                    Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
                     continue;
                 }
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
 
                 IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
                 if (!moduleBase.HasValue)
                 {
-                    Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
+                    Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
                     continue;
                 }
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
+                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
 
                 // 修改初始进度
                 IntPtr address = moduleBase.Value + 0x4CF4B1 + 3;
                 string bytesArrayMiaokuangjindu = FloatToBytes(miaokuangjindu);
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [1/3] 修改初始进度: 地址 {address.ToString("X8")} = {bytesArrayMiaokuangjindu}");
+                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 修改秒矿进度: 地址 {address.ToString("X8")} = {bytesArrayMiaokuangjindu}");
                 WriteProcessMemoryWithBackup(processId.Value, address, bytesArrayMiaokuangjindu, 4);
 
-                // 修改秒矿间隔
-                address = moduleBase.Value + 0x3921D8;
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [2/3] 修改秒矿间隔: 地址 {address.ToString("X8")} = 90 90 90 90");
-                WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90 90", 4);
-
-                // 删除秒矿间隔
-                address = moduleBase.Value + 0x4CCB39;
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] [3/3] 删除秒矿间隔: 地址 {address.ToString("X8")} = 90 90");
-                WriteProcessMemoryWithBackup(processId.Value, address, "90 90", 2);
-
-                Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿设置应用完成");
+                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿进度设置应用完成");
                 windowIndex++;
             }
-            Log("[秒矿设置] 所有窗口秒矿设置应用完成");
+            Log("[秒矿进度] 所有窗口秒矿进度设置应用完成");
+        }
+
+        // 修改秒矿间隔
+        public static void MiaokuangInterval(List<Tuple<IntPtr, string>> hwndsNames, bool enable = false)
+        {
+            Log($"[秒矿间隔] 开始应用秒矿间隔设置，状态: {(enable ? "开启" : "关闭")}");
+            if (hwndsNames == null)
+            {
+                Log("[秒矿间隔] 参数无效，跳过");
+                return;
+            }
+
+            Log($"[秒矿间隔] 共有 {hwndsNames.Count} 个窗口需要应用秒矿间隔设置");
+            int windowIndex = 1;
+            foreach (var item in hwndsNames)
+            {
+                IntPtr hwnd = item.Item1;
+                string name = item.Item2;
+                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+
+                uint? processId = GetProcessId(hwnd);
+                if (!processId.HasValue)
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                    continue;
+                }
+                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+
+                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
+                if (!moduleBase.HasValue)
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
+                    continue;
+                }
+                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
+
+                // 修改秒矿间隔（禁止修改进度）
+                IntPtr address = moduleBase.Value + 0x3921D8;
+                if (enable)
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 开启秒矿间隔: 地址 {address.ToString("X8")} = 90 90 90 90");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90 90", 4);
+                }
+                else
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 关闭秒矿间隔: 地址 {address.ToString("X8")} = F3 0F 11 00");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "F3 0F 11 00", 4);
+                }
+
+                // 修改秒矿间隔检查
+                address = moduleBase.Value + 0x4CCB39;
+                if (enable)
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 删除秒矿间隔检查: 地址 {address.ToString("X8")} = 90 90");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "90 90", 2);
+                }
+                else
+                {
+                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 恢复秒矿间隔检查: 地址 {address.ToString("X8")} = 72 54");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "72 54", 2);
+                }
+
+                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿间隔设置应用完成");
+                windowIndex++;
+            }
+            Log("[秒矿间隔] 所有窗口秒矿间隔设置应用完成");
+        }
+
+        // 修改快刀
+        public static void Kuaidao(List<Tuple<IntPtr, string>> hwndsNames, bool enable = false)
+        {
+            Log($"[快刀设置] 开始应用快刀设置，状态: {(enable ? "开启" : "关闭")}");
+            if (hwndsNames == null)
+            {
+                Log("[快刀设置] 参数无效，跳过");
+                return;
+            }
+
+            Log($"[快刀设置] 共有 {hwndsNames.Count} 个窗口需要应用快刀设置");
+            int windowIndex = 1;
+            foreach (var item in hwndsNames)
+            {
+                IntPtr hwnd = item.Item1;
+                string name = item.Item2;
+                Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+
+                uint? processId = GetProcessId(hwnd);
+                if (!processId.HasValue)
+                {
+                    Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                    continue;
+                }
+                Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+
+                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
+                if (!moduleBase.HasValue)
+                {
+                    Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
+                    continue;
+                }
+                Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
+
+                // 修改快刀
+                IntPtr address = moduleBase.Value + 0x4CF4B1 + 3; // 这里需要确认正确的偏移量
+                if (enable)
+                {
+                    Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 开启快刀: 地址 {address.ToString("X8")} = 90 90 90");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90", 3);
+                }
+                else
+                {
+                    Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 关闭快刀: 地址 {address.ToString("X8")} = D9 5E 08");
+                    WriteProcessMemoryWithBackup(processId.Value, address, "D9 5E 08", 3);
+                }
+
+                Log($"[快刀设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 快刀设置应用完成");
+                windowIndex++;
+            }
+            Log("[快刀设置] 所有窗口快刀设置应用完成");
         }
 
         // 修改秒上坐骑

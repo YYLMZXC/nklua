@@ -154,72 +154,105 @@ namespace MemoryHelper
             clearOutputButton.Click += ClearOutputButton_Click;
             rightTablePanel.Controls.Add(clearOutputButton, 0, 3);
 
-            // 底部面板 - 秒矿和坐骑设置
-            Panel bottomPanel = new Panel();
-            bottomPanel.Dock = DockStyle.Fill;
-            bottomPanel.Padding = new Padding(20);
-            mainPanel.Controls.Add(bottomPanel, 0, 1);
-            mainPanel.SetColumnSpan(bottomPanel, 2);
+            // 底部面板 - 使用嵌套的TableLayoutPanel
+            TableLayoutPanel bottomTablePanel = new TableLayoutPanel();
+            bottomTablePanel.Dock = DockStyle.Fill;
+            bottomTablePanel.ColumnCount = 5;
+            bottomTablePanel.RowCount = 2;
+            bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            bottomTablePanel.Padding = new Padding(20);
+            mainPanel.Controls.Add(bottomTablePanel, 0, 1);
+            mainPanel.SetColumnSpan(bottomTablePanel, 2);
 
-            // 秒矿设置标签
-            Label miaokuangLabel = new Label();
-            miaokuangLabel.Text = "秒矿设置:";
-            miaokuangLabel.Location = new Point(20, 20);
-            miaokuangLabel.AutoSize = true;
-            bottomPanel.Controls.Add(miaokuangLabel);
+            // 第一行：秒矿设置
+            // 秒矿进度标签
+            Label miaokuangJinduLabel = new Label();
+            miaokuangJinduLabel.Text = "秒矿进度:";
+            miaokuangJinduLabel.Dock = DockStyle.Fill;
+            miaokuangJinduLabel.TextAlign = ContentAlignment.MiddleLeft;
+            bottomTablePanel.Controls.Add(miaokuangJinduLabel, 0, 0);
 
             // 秒矿进度输入
             TextBox miaokuangInput = new TextBox();
             miaokuangInput.Name = "miaokuangInput";
-            miaokuangInput.Location = new Point(100, 16);
-            miaokuangInput.Size = new Size(100, 20);
+            miaokuangInput.Dock = DockStyle.Fill;
             miaokuangInput.Text = "0.7";
-            bottomPanel.Controls.Add(miaokuangInput);
+            miaokuangInput.Margin = new Padding(5, 10, 5, 10);
+            bottomTablePanel.Controls.Add(miaokuangInput, 1, 0);
 
-            // 秒矿说明
-            Label miaokuangHint = new Label();
-            miaokuangHint.Text = "收菜建议0.7,全挖建议10";
-            miaokuangHint.Location = new Point(210, 20);
-            miaokuangHint.AutoSize = true;
-            bottomPanel.Controls.Add(miaokuangHint);
+            // 应用秒矿进度按钮
+            Button miaokuangJinduButton = new Button();
+            miaokuangJinduButton.Text = "应用秒矿进度";
+            miaokuangJinduButton.Dock = DockStyle.Fill;
+            miaokuangJinduButton.Margin = new Padding(5, 10, 5, 10);
+            miaokuangJinduButton.Click += MiaokuangJinduButton_Click;
+            bottomTablePanel.Controls.Add(miaokuangJinduButton, 2, 0);
 
-            // 秒矿按钮
-            Button miaokuangButton = new Button();
-            miaokuangButton.Text = "应用秒矿设置";
-            miaokuangButton.Location = new Point(370, 10);
-            miaokuangButton.Size = new Size(120, 30);
-            miaokuangButton.Click += MiaokuangButton_Click;
-            bottomPanel.Controls.Add(miaokuangButton);
+            // 秒矿间隔复选框
+            CheckBox miaokuangIntervalCheckBox = new CheckBox();
+            miaokuangIntervalCheckBox.Name = "miaokuangIntervalCheckBox";
+            miaokuangIntervalCheckBox.Text = "开启秒矿间隔";
+            miaokuangIntervalCheckBox.Dock = DockStyle.Fill;
+            miaokuangIntervalCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            miaokuangIntervalCheckBox.Margin = new Padding(5, 10, 5, 10);
+            bottomTablePanel.Controls.Add(miaokuangIntervalCheckBox, 3, 0);
 
-            // 秒上坐骑设置
-            Label zuoqiLabel = new Label();
-            zuoqiLabel.Text = "秒上坐骑:";
-            zuoqiLabel.Location = new Point(20, 60);
-            zuoqiLabel.AutoSize = true;
-            bottomPanel.Controls.Add(zuoqiLabel);
+            // 应用秒矿间隔按钮
+            Button miaokuangIntervalButton = new Button();
+            miaokuangIntervalButton.Text = "应用秒矿间隔";
+            miaokuangIntervalButton.Dock = DockStyle.Fill;
+            miaokuangIntervalButton.Margin = new Padding(5, 10, 5, 10);
+            miaokuangIntervalButton.Click += MiaokuangIntervalButton_Click;
+            bottomTablePanel.Controls.Add(miaokuangIntervalButton, 4, 0);
+
+            // 第二行：其他设置
+            // 快刀复选框
+            CheckBox kuaidaoCheckBox = new CheckBox();
+            kuaidaoCheckBox.Name = "kuaidaoCheckBox";
+            kuaidaoCheckBox.Text = "开启快刀";
+            kuaidaoCheckBox.Dock = DockStyle.Fill;
+            kuaidaoCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            kuaidaoCheckBox.Margin = new Padding(0, 10, 5, 10);
+            bottomTablePanel.Controls.Add(kuaidaoCheckBox, 0, 1);
+
+            // 应用快刀按钮
+            Button kuaidaoButton = new Button();
+            kuaidaoButton.Text = "应用快刀";
+            kuaidaoButton.Dock = DockStyle.Fill;
+            kuaidaoButton.Margin = new Padding(5, 10, 5, 10);
+            kuaidaoButton.Click += KuaidaoButton_Click;
+            bottomTablePanel.Controls.Add(kuaidaoButton, 1, 1);
 
             // 秒上坐骑复选框
             CheckBox zuoqiCheckBox = new CheckBox();
             zuoqiCheckBox.Name = "zuoqiCheckBox";
             zuoqiCheckBox.Text = "开启秒上坐骑";
-            zuoqiCheckBox.Location = new Point(100, 58);
-            bottomPanel.Controls.Add(zuoqiCheckBox);
+            zuoqiCheckBox.Dock = DockStyle.Fill;
+            zuoqiCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            zuoqiCheckBox.Margin = new Padding(5, 10, 5, 10);
+            bottomTablePanel.Controls.Add(zuoqiCheckBox, 2, 1);
 
-            // 秒上坐骑按钮
+            // 应用坐骑按钮
             Button zuoqiButton = new Button();
             zuoqiButton.Text = "应用坐骑设置";
-            zuoqiButton.Location = new Point(370, 55);
-            zuoqiButton.Size = new Size(120, 30);
+            zuoqiButton.Dock = DockStyle.Fill;
+            zuoqiButton.Margin = new Padding(5, 10, 5, 10);
             zuoqiButton.Click += ZuoqiButton_Click;
-            bottomPanel.Controls.Add(zuoqiButton);
+            bottomTablePanel.Controls.Add(zuoqiButton, 3, 1);
 
             // 还原按钮
             Button restoreButton = new Button();
             restoreButton.Text = "还原所有设置";
-            restoreButton.Location = new Point(510, 10);
-            restoreButton.Size = new Size(120, 75);
+            restoreButton.Dock = DockStyle.Fill;
+            restoreButton.Margin = new Padding(5, 10, 0, 10);
             restoreButton.Click += RestoreButton_Click;
-            bottomPanel.Controls.Add(restoreButton);
+            bottomTablePanel.Controls.Add(restoreButton, 4, 1);
         }
 
         private void EnumerateWindows()
@@ -288,7 +321,7 @@ namespace MemoryHelper
             AddOutput("已更新窗口标题");
         }
 
-        private void MiaokuangButton_Click(object sender, EventArgs e)
+        private void MiaokuangJinduButton_Click(object sender, EventArgs e)
         {
             if (selectedWindows == null || selectedWindows.Count == 0)
             {
@@ -301,14 +334,46 @@ namespace MemoryHelper
 
             if (float.TryParse(miaokuangInput.Text, out miaokuangjindu))
             {
-                AddOutput($"正在应用秒矿设置: {miaokuangjindu}");
-                MemoryTools.Miaokuang(selectedWindows, miaokuangjindu);
-                AddOutput("秒矿设置已应用");
+                AddOutput($"正在应用秒矿进度设置: {miaokuangjindu}");
+                MemoryTools.MiaokuangJindu(selectedWindows, miaokuangjindu);
+                AddOutput("秒矿进度设置已应用");
             }
             else
             {
                 AddOutput("请输入有效的秒矿进度值");
             }
+        }
+
+        private void MiaokuangIntervalButton_Click(object sender, EventArgs e)
+        {
+            if (selectedWindows == null || selectedWindows.Count == 0)
+            {
+                AddOutput("请先选择窗口");
+                return;
+            }
+
+            CheckBox miaokuangIntervalCheckBox = (CheckBox)this.Controls.Find("miaokuangIntervalCheckBox", true)[0];
+            bool enable = miaokuangIntervalCheckBox.Checked;
+
+            AddOutput($"正在应用秒矿间隔设置: {(enable ? "开启" : "关闭")}");
+            MemoryTools.MiaokuangInterval(selectedWindows, enable);
+            AddOutput("秒矿间隔设置已应用");
+        }
+
+        private void KuaidaoButton_Click(object sender, EventArgs e)
+        {
+            if (selectedWindows == null || selectedWindows.Count == 0)
+            {
+                AddOutput("请先选择窗口");
+                return;
+            }
+
+            CheckBox kuaidaoCheckBox = (CheckBox)this.Controls.Find("kuaidaoCheckBox", true)[0];
+            bool enable = kuaidaoCheckBox.Checked;
+
+            AddOutput($"正在应用快刀设置: {(enable ? "开启" : "关闭")}");
+            MemoryTools.Kuaidao(selectedWindows, enable);
+            AddOutput("快刀设置已应用");
         }
 
         private void ZuoqiButton_Click(object sender, EventArgs e)
@@ -353,6 +418,12 @@ namespace MemoryHelper
             // 重置UI控件
             TextBox miaokuangInput = (TextBox)this.Controls.Find("miaokuangInput", true)[0];
             miaokuangInput.Text = "0.7";
+
+            CheckBox miaokuangIntervalCheckBox = (CheckBox)this.Controls.Find("miaokuangIntervalCheckBox", true)[0];
+            miaokuangIntervalCheckBox.Checked = false;
+
+            CheckBox kuaidaoCheckBox = (CheckBox)this.Controls.Find("kuaidaoCheckBox", true)[0];
+            kuaidaoCheckBox.Checked = false;
 
             CheckBox zuoqiCheckBox = (CheckBox)this.Controls.Find("zuoqiCheckBox", true)[0];
             zuoqiCheckBox.Checked = false;
