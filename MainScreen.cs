@@ -29,6 +29,10 @@ namespace MemoryHelper
         {
             AddOutput("程序正在退出，正在还原所有修改...");
             
+            // 停止冻结线程
+            MemoryTools.StopFreezeThread();
+            MemoryTools.RemoveFreezeLocks();
+            
             // 还原所有内存修改
             if (selectedWindows != null && selectedWindows.Count > 0)
             {
@@ -159,15 +163,16 @@ namespace MemoryHelper
             TableLayoutPanel bottomTablePanel = new TableLayoutPanel();
             bottomTablePanel.Dock = DockStyle.Fill;
             bottomTablePanel.ColumnCount = 5;
-            bottomTablePanel.RowCount = 3;
+            bottomTablePanel.RowCount = 4;
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             bottomTablePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
-            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 34));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            bottomTablePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
             bottomTablePanel.Padding = new Padding(20);
             mainPanel.Controls.Add(bottomTablePanel, 0, 1);
             mainPanel.SetColumnSpan(bottomTablePanel, 2);
@@ -282,6 +287,17 @@ namespace MemoryHelper
             shijiaoButton.Click += ShijiaoButton_Click;
             bottomTablePanel.Controls.Add(shijiaoButton, 2, 2);
             bottomTablePanel.SetColumnSpan(shijiaoButton, 3);
+
+            // 第四行：冻结锁定设置
+            // 冻结锁定复选框
+            CheckBox freezeCheckBox = new CheckBox();
+            freezeCheckBox.Name = "freezeCheckBox";
+            freezeCheckBox.Text = "开启冻结锁定（持续修改）";
+            freezeCheckBox.Dock = DockStyle.Fill;
+            freezeCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            freezeCheckBox.Margin = new Padding(0, 5, 5, 5);
+            bottomTablePanel.Controls.Add(freezeCheckBox, 0, 3);
+            bottomTablePanel.SetColumnSpan(freezeCheckBox, 5);
         }
 
         private void EnumerateWindows()
@@ -487,13 +503,15 @@ namespace MemoryHelper
 
             CheckBox shijiaoCheckBox = (CheckBox)this.Controls.Find("shijiaoCheckBox", true)[0];
             TextBox shijiaoInput = (TextBox)this.Controls.Find("shijiaoInput", true)[0];
+            CheckBox freezeCheckBox = (CheckBox)this.Controls.Find("freezeCheckBox", true)[0];
             bool enable = shijiaoCheckBox.Checked;
+            bool freeze = freezeCheckBox.Checked;
             float shijiaoValue = 89.5f;
 
             if (float.TryParse(shijiaoInput.Text, out shijiaoValue))
             {
-                AddOutput($"正在应用视角锁定设置: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}");
-                MemoryTools.ShijiaoLock(selectedWindows, shijiaoValue, enable);
+                AddOutput($"正在应用视角锁定设置: {(enable ? "开启" : "关闭")}, 值: {shijiaoValue}, 冻结: {(freeze ? "是" : "否")}");
+                MemoryTools.ShijiaoLock(selectedWindows, shijiaoValue, enable, freeze);
                 AddOutput("视角锁定设置已应用");
             }
             else
@@ -520,6 +538,10 @@ namespace MemoryHelper
 
             AddOutput("正在还原所有内存修改...");
 
+            // 停止冻结线程
+            MemoryTools.StopFreezeThread();
+            MemoryTools.RemoveFreezeLocks();
+
             // 还原所有内存修改
             MemoryTools.RestoreAllMemory(selectedWindows);
 
@@ -543,6 +565,9 @@ namespace MemoryHelper
 
             TextBox shijiaoInput = (TextBox)this.Controls.Find("shijiaoInput", true)[0];
             shijiaoInput.Text = "89.5";
+
+            CheckBox freezeCheckBox = (CheckBox)this.Controls.Find("freezeCheckBox", true)[0];
+            freezeCheckBox.Checked = false;
         }
 
 
