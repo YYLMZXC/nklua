@@ -283,15 +283,12 @@ namespace MemoryHelper
                 return;
             }
 
-            AddOutput("正在还原所有设置...");
+            AddOutput("正在还原所有内存修改...");
 
-            // 还原秒矿设置 (传入0表示还原)
-            MemoryTools.Miaokuang(selectedWindows, 0);
+            // 还原所有内存修改
+            MemoryTools.RestoreAllMemory(selectedWindows);
 
-            // 还原秒上坐骑设置 (传入0表示还原)
-            MemoryTools.Miaoshangzuoqi(selectedWindows, 0);
-
-            AddOutput("所有设置已还原");
+            AddOutput("所有内存修改已还原");
 
             // 重置UI控件
             TextBox miaokuangInput = (TextBox)this.Controls.Find("miaokuangInput", true)[0];

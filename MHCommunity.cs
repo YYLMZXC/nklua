@@ -9,6 +9,17 @@ namespace MemoryHelper
 {
     public class MemoryTools
     {
+        // 保存原始内存数据的结构
+        private struct MemoryBackup
+        {
+            public IntPtr Address;
+            public string OriginalBytes;
+            public int Size;
+        }
+
+        // 按进程ID保存的内存备份
+        private static Dictionary<uint, List<MemoryBackup>> memoryBackups = new Dictionary<uint, List<MemoryBackup>>();
+
         // 进程访问权限常量
         private const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
         private const uint PROCESS_VM_READ = 0x0010;
@@ -213,6 +224,77 @@ namespace MemoryHelper
         {
             byte[] byteData = Encoding.UTF8.GetBytes(stringValue);
             return string.Join(" ", byteData.Select(b => b.ToString("x2")));
+        }
+
+        // 保存原始内存数据
+        private static void SaveOriginalMemory(uint processId, IntPtr address, int size)
+        {
+            if (!memoryBackups.ContainsKey(processId))
+            {
+                memoryBackups[processId] = new List<MemoryBackup>();
+            }
+
+            // 检查是否已经备份过这个地址
+            if (memoryBackups[processId].Any(b => b.Address == address))
+            {
+                return;
+            }
+
+            string originalBytes = ReadProcessMemoryAsString(processId, address, size);
+            if (originalBytes != null)
+            {
+                memoryBackups[processId].Add(new MemoryBackup
+                {
+                    Address = address,
+                    OriginalBytes = originalBytes,
+                    Size = size
+                });
+            }
+        }
+
+        // 恢复原始内存数据
+        public static bool RestoreOriginalMemory(uint processId)
+        {
+            if (!memoryBackups.ContainsKey(processId))
+            {
+                return false;
+            }
+
+            bool success = true;
+            foreach (var backup in memoryBackups[processId])
+            {
+                if (!WriteProcessMemory(processId, backup.Address, backup.OriginalBytes))
+                {
+                    success = false;
+                }
+            }
+
+            memoryBackups.Remove(processId);
+            return success;
+        }
+
+        // 恢复所有进程的原始内存数据
+        public static void RestoreAllMemory(List<Tuple<IntPtr, string>> hwndsNames)
+        {
+            if (hwndsNames == null)
+                return;
+
+            foreach (var item in hwndsNames)
+            {
+                IntPtr hwnd = item.Item1;
+                uint? processId = GetProcessId(hwnd);
+                if (processId.HasValue)
+                {
+                    RestoreOriginalMemory(processId.Value);
+                }
+            }
+        }
+
+        // 向指定进程的指定地址写入字节数组（带备份功能）
+        public static bool WriteProcessMemoryWithBackup(uint processId, IntPtr address, string bytesArray, int size)
+        {
+            SaveOriginalMemory(processId, address, size);
+            return WriteProcessMemory(processId, address, bytesArray);
         }
 
         // 向指定进程的指定地址写入字节数组
@@ -429,7 +511,7 @@ namespace MemoryHelper
         // 修改秒矿
         public static void Miaokuang(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangjindu = 0)
         {
-            if (hwndsNames == null)
+            if (hwndsNames == null || miaokuangjindu == 0)
                 return;
 
             foreach (var item in hwndsNames)
@@ -448,29 +530,15 @@ namespace MemoryHelper
                 // 修改初始进度
                 IntPtr address = moduleBase.Value + 0x4CF4B1 + 3;
                 string bytesArrayMiaokuangjindu = FloatToBytes(miaokuangjindu);
-                WriteProcessMemory(processId.Value, address, bytesArrayMiaokuangjindu);
+                WriteProcessMemoryWithBackup(processId.Value, address, bytesArrayMiaokuangjindu, 4);
 
                 // 修改秒矿间隔
                 address = moduleBase.Value + 0x3921D8;
-                if (miaokuangjindu == 0)
-                {
-                    WriteProcessMemory(processId.Value, address, "F3 0F 11 00");
-                }
-                else
-                {
-                    WriteProcessMemory(processId.Value, address, "90 90 90 90");
-                }
+                WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90 90", 4);
 
                 // 删除秒矿间隔
                 address = moduleBase.Value + 0x4CCB39;
-                if (miaokuangjindu == 0)
-                {
-                    WriteProcessMemory(processId.Value, address, "72 54");
-                }
-                else
-                {
-                    WriteProcessMemory(processId.Value, address, "90 90");
-                }
+                WriteProcessMemoryWithBackup(processId.Value, address, "90 90", 2);
 
                 // 这个方法在Windows Forms应用程序中不再直接输出到控制台
                 // 而是通过Form1中的AddOutput方法显示在UI中
@@ -480,7 +548,7 @@ namespace MemoryHelper
         // 修改秒上坐骑
         public static void Miaoshangzuoqi(List<Tuple<IntPtr, string>> hwndsNames, int shifouxiugai = 0)
         {
-            if (hwndsNames == null)
+            if (hwndsNames == null || shifouxiugai == 0)
                 return;
 
             foreach (var item in hwndsNames)
@@ -498,14 +566,7 @@ namespace MemoryHelper
 
                 // 修改初始进度
                 IntPtr address = moduleBase.Value + 0x701299;
-                if (shifouxiugai != 0)
-                {
-                    WriteProcessMemory(processId.Value, address, "D0 07");
-                }
-                else
-                {
-                    WriteProcessMemory(processId.Value, address, "E8 03");
-                }
+                WriteProcessMemoryWithBackup(processId.Value, address, "D0 07", 2);
                 // 这个方法在Windows Forms应用程序中不再直接输出到控制台
                 // 而是通过Form1中的AddOutput方法显示在UI中
             }
