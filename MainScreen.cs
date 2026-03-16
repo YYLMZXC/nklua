@@ -10,12 +10,12 @@ using System.Windows.Forms;
 
 namespace MemoryHelper
 {
-    public class Main : Form
+    public class MainScreen : Form
     {
         private List<Tuple<IntPtr, string>> selectedWindows = new List<Tuple<IntPtr, string>>();
         private List<MemoryTools.WindowInfo> allWindows = new List<MemoryTools.WindowInfo>();
 
-        public Main()
+        public MainScreen()
         {
             InitializeUI();
         }
@@ -273,10 +273,7 @@ namespace MemoryHelper
             outputTextBox.Clear();
         }
 
-        private void InitializeComponent()
-        {
-
-        }
+       
 
         private void RestoreButton_Click(object sender, EventArgs e)
         {
@@ -317,7 +314,7 @@ namespace MemoryHelper
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Main());
+            Application.Run(new MainScreen());
         }
     }
 }
