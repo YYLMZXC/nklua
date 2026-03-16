@@ -10,12 +10,12 @@ using System.Windows.Forms;
 
 namespace MemoryHelper
 {
-    public class Form1 : Form
+    public class Main : Form
     {
         private List<Tuple<IntPtr, string>> selectedWindows = new List<Tuple<IntPtr, string>>();
         private List<MemoryTools.WindowInfo> allWindows = new List<MemoryTools.WindowInfo>();
 
-        public Form1()
+        public Main()
         {
             InitializeUI();
         }
@@ -23,7 +23,7 @@ namespace MemoryHelper
         private void InitializeUI()
         {
             this.Text = "奶块辅助工具";
-            this.Size = new System.Drawing.Size(700, 450); // 增加表单大小
+            this.Size = new System.Drawing.Size(800, 550); // 进一步增加表单大小以适应更大的间距
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -52,7 +52,7 @@ namespace MemoryHelper
             // 左侧面板 - 窗口列表
             Panel leftPanel = new Panel();
             leftPanel.Dock = DockStyle.Fill;
-            leftPanel.Padding = new Padding(10);
+            leftPanel.Padding = new Padding(20);
             mainPanel.Controls.Add(leftPanel, 0, 0);
 
             // 窗口列表标签
@@ -66,20 +66,20 @@ namespace MemoryHelper
             ListBox windowListBox = new ListBox();
             windowListBox.Name = "windowListBox";
             windowListBox.Dock = DockStyle.Fill;
-            windowListBox.Margin = new Padding(0, 5, 0, 0);
+            windowListBox.Margin = new Padding(0, 10, 0, 0);
             leftPanel.Controls.Add(windowListBox);
 
             // 右侧面板 - 操作和输出
             Panel rightPanel = new Panel();
             rightPanel.Dock = DockStyle.Fill;
-            rightPanel.Padding = new Padding(10);
+            rightPanel.Padding = new Padding(20);
             mainPanel.Controls.Add(rightPanel, 1, 0);
 
             // 刷新按钮
             Button refreshButton = new Button();
             refreshButton.Text = "刷新窗口";
             refreshButton.Dock = DockStyle.Top;
-            refreshButton.Margin = new Padding(0, 0, 0, 5);
+            refreshButton.Margin = new Padding(0, 0, 0, 10);
             refreshButton.Click += RefreshButton_Click;
             rightPanel.Controls.Add(refreshButton);
 
@@ -87,7 +87,7 @@ namespace MemoryHelper
             Button selectButton = new Button();
             selectButton.Text = "选择窗口";
             selectButton.Dock = DockStyle.Top;
-            selectButton.Margin = new Padding(0, 0, 0, 5);
+            selectButton.Margin = new Padding(0, 0, 0, 10);
             selectButton.Click += SelectButton_Click;
             rightPanel.Controls.Add(selectButton);
 
@@ -98,35 +98,35 @@ namespace MemoryHelper
             outputTextBox.Multiline = true;
             outputTextBox.ReadOnly = true;
             outputTextBox.ScrollBars = ScrollBars.Vertical;
-            outputTextBox.Margin = new Padding(0, 5, 0, 0);
+            outputTextBox.Margin = new Padding(0, 10, 0, 0);
             rightPanel.Controls.Add(outputTextBox);
 
             // 清空输出按钮
             Button clearOutputButton = new Button();
             clearOutputButton.Text = "清空输出";
             clearOutputButton.Dock = DockStyle.Bottom;
-            clearOutputButton.Margin = new Padding(0, 5, 0, 0);
+            clearOutputButton.Margin = new Padding(0, 10, 0, 0);
             clearOutputButton.Click += ClearOutputButton_Click;
             rightPanel.Controls.Add(clearOutputButton);
 
             // 底部面板 - 秒矿和坐骑设置
             Panel bottomPanel = new Panel();
             bottomPanel.Dock = DockStyle.Fill;
-            bottomPanel.Padding = new Padding(10);
+            bottomPanel.Padding = new Padding(20);
             mainPanel.Controls.Add(bottomPanel, 0, 1);
             mainPanel.SetColumnSpan(bottomPanel, 2);
 
             // 秒矿设置标签
             Label miaokuangLabel = new Label();
             miaokuangLabel.Text = "秒矿设置:";
-            miaokuangLabel.Location = new Point(10, 10);
+            miaokuangLabel.Location = new Point(20, 20);
             miaokuangLabel.AutoSize = true;
             bottomPanel.Controls.Add(miaokuangLabel);
 
             // 秒矿进度输入
             TextBox miaokuangInput = new TextBox();
             miaokuangInput.Name = "miaokuangInput";
-            miaokuangInput.Location = new Point(80, 8);
+            miaokuangInput.Location = new Point(100, 16);
             miaokuangInput.Size = new Size(100, 20);
             miaokuangInput.Text = "0.7";
             bottomPanel.Controls.Add(miaokuangInput);
@@ -134,14 +134,14 @@ namespace MemoryHelper
             // 秒矿说明
             Label miaokuangHint = new Label();
             miaokuangHint.Text = "收菜建议0.7,全挖建议10";
-            miaokuangHint.Location = new Point(190, 10);
+            miaokuangHint.Location = new Point(210, 20);
             miaokuangHint.AutoSize = true;
             bottomPanel.Controls.Add(miaokuangHint);
 
             // 秒矿按钮
             Button miaokuangButton = new Button();
             miaokuangButton.Text = "应用秒矿设置";
-            miaokuangButton.Location = new Point(350, 5);
+            miaokuangButton.Location = new Point(370, 10);
             miaokuangButton.Size = new Size(120, 30);
             miaokuangButton.Click += MiaokuangButton_Click;
             bottomPanel.Controls.Add(miaokuangButton);
@@ -149,7 +149,7 @@ namespace MemoryHelper
             // 秒上坐骑设置
             Label zuoqiLabel = new Label();
             zuoqiLabel.Text = "秒上坐骑:";
-            zuoqiLabel.Location = new Point(10, 45);
+            zuoqiLabel.Location = new Point(20, 60);
             zuoqiLabel.AutoSize = true;
             bottomPanel.Controls.Add(zuoqiLabel);
 
@@ -157,16 +157,24 @@ namespace MemoryHelper
             CheckBox zuoqiCheckBox = new CheckBox();
             zuoqiCheckBox.Name = "zuoqiCheckBox";
             zuoqiCheckBox.Text = "开启秒上坐骑";
-            zuoqiCheckBox.Location = new Point(80, 43);
+            zuoqiCheckBox.Location = new Point(100, 58);
             bottomPanel.Controls.Add(zuoqiCheckBox);
 
             // 秒上坐骑按钮
             Button zuoqiButton = new Button();
             zuoqiButton.Text = "应用坐骑设置";
-            zuoqiButton.Location = new Point(350, 40);
+            zuoqiButton.Location = new Point(370, 55);
             zuoqiButton.Size = new Size(120, 30);
             zuoqiButton.Click += ZuoqiButton_Click;
             bottomPanel.Controls.Add(zuoqiButton);
+
+            // 还原按钮
+            Button restoreButton = new Button();
+            restoreButton.Text = "还原所有设置";
+            restoreButton.Location = new Point(510, 10);
+            restoreButton.Size = new Size(120, 75);
+            restoreButton.Click += RestoreButton_Click;
+            bottomPanel.Controls.Add(restoreButton);
         }
 
         private void EnumerateWindows()
@@ -265,6 +273,37 @@ namespace MemoryHelper
             outputTextBox.Clear();
         }
 
+        private void InitializeComponent()
+        {
+
+        }
+
+        private void RestoreButton_Click(object sender, EventArgs e)
+        {
+            if (selectedWindows == null || selectedWindows.Count == 0)
+            {
+                AddOutput("请先选择窗口");
+                return;
+            }
+
+            AddOutput("正在还原所有设置...");
+
+            // 还原秒矿设置 (传入0表示还原)
+            MemoryTools.Miaokuang(selectedWindows, 0);
+
+            // 还原秒上坐骑设置 (传入0表示还原)
+            MemoryTools.Miaoshangzuoqi(selectedWindows, 0);
+
+            AddOutput("所有设置已还原");
+
+            // 重置UI控件
+            TextBox miaokuangInput = (TextBox)this.Controls.Find("miaokuangInput", true)[0];
+            miaokuangInput.Text = "0.7";
+
+            CheckBox zuoqiCheckBox = (CheckBox)this.Controls.Find("zuoqiCheckBox", true)[0];
+            zuoqiCheckBox.Checked = false;
+        }
+
 
     }
 
@@ -278,7 +317,7 @@ namespace MemoryHelper
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new Main());
         }
     }
 }
