@@ -22,7 +22,7 @@ namespace MemoryHelper
 
         private void InitializeUI()
         {
-            this.Text = "奶块辅助工具";
+            this.Text = "梦幻社区";
             this.Size = new System.Drawing.Size(800, 550); // 进一步增加表单大小以适应更大的间距
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
