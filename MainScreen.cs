@@ -179,45 +179,31 @@ namespace MemoryHelper
             mainPanel.SetColumnSpan(bottomTablePanel, 2);
 
             // 第一行：秒矿设置
-            // 秒矿进度标签
-            Label miaokuangJinduLabel = new Label();
-            miaokuangJinduLabel.Text = "秒矿进度:";
-            miaokuangJinduLabel.Dock = DockStyle.Fill;
-            miaokuangJinduLabel.TextAlign = ContentAlignment.MiddleLeft;
-            bottomTablePanel.Controls.Add(miaokuangJinduLabel, 0, 0);
+            // 秒矿复选框
+            CheckBox miaokuangCheckBox = new CheckBox();
+            miaokuangCheckBox.Name = "miaokuangCheckBox";
+            miaokuangCheckBox.Text = "开启秒矿";
+            miaokuangCheckBox.Dock = DockStyle.Fill;
+            miaokuangCheckBox.TextAlign = ContentAlignment.MiddleLeft;
+            miaokuangCheckBox.Margin = new Padding(0, 5, 5, 5);
+            bottomTablePanel.Controls.Add(miaokuangCheckBox, 0, 0);
 
-            // 秒矿进度输入
+            // 秒矿值输入
             TextBox miaokuangInput = new TextBox();
             miaokuangInput.Name = "miaokuangInput";
             miaokuangInput.Dock = DockStyle.Fill;
-            miaokuangInput.Text = "0.7";
+            miaokuangInput.Text = "0.8999999762";
             miaokuangInput.Margin = new Padding(5, 5, 5, 5);
             bottomTablePanel.Controls.Add(miaokuangInput, 1, 0);
 
-            // 应用秒矿进度按钮
-            Button miaokuangJinduButton = new Button();
-            miaokuangJinduButton.Text = "应用秒矿进度";
-            miaokuangJinduButton.Dock = DockStyle.Fill;
-            miaokuangJinduButton.Margin = new Padding(5, 5, 5, 5);
-            miaokuangJinduButton.Click += MiaokuangJinduButton_Click;
-            bottomTablePanel.Controls.Add(miaokuangJinduButton, 2, 0);
-
-            // 秒矿间隔复选框
-            CheckBox miaokuangIntervalCheckBox = new CheckBox();
-            miaokuangIntervalCheckBox.Name = "miaokuangIntervalCheckBox";
-            miaokuangIntervalCheckBox.Text = "开启秒矿间隔";
-            miaokuangIntervalCheckBox.Dock = DockStyle.Fill;
-            miaokuangIntervalCheckBox.TextAlign = ContentAlignment.MiddleLeft;
-            miaokuangIntervalCheckBox.Margin = new Padding(5, 5, 5, 5);
-            bottomTablePanel.Controls.Add(miaokuangIntervalCheckBox, 3, 0);
-
-            // 应用秒矿间隔按钮
-            Button miaokuangIntervalButton = new Button();
-            miaokuangIntervalButton.Text = "应用秒矿间隔";
-            miaokuangIntervalButton.Dock = DockStyle.Fill;
-            miaokuangIntervalButton.Margin = new Padding(5, 5, 5, 5);
-            miaokuangIntervalButton.Click += MiaokuangIntervalButton_Click;
-            bottomTablePanel.Controls.Add(miaokuangIntervalButton, 4, 0);
+            // 应用秒矿按钮
+            Button miaokuangButton = new Button();
+            miaokuangButton.Text = "应用秒矿设置";
+            miaokuangButton.Dock = DockStyle.Fill;
+            miaokuangButton.Margin = new Padding(5, 5, 5, 5);
+            miaokuangButton.Click += MiaokuangButton_Click;
+            bottomTablePanel.Controls.Add(miaokuangButton, 2, 0);
+            bottomTablePanel.SetColumnSpan(miaokuangButton, 3);
 
             // 第二行：快刀和坐骑设置
             // 快刀复选框
@@ -450,7 +436,7 @@ namespace MemoryHelper
             AddOutput("已更新窗口标题");
         }
 
-        private void MiaokuangJinduButton_Click(object sender, EventArgs e)
+        private void MiaokuangButton_Click(object sender, EventArgs e)
         {
             if (selectedWindows == null || selectedWindows.Count == 0)
             {
@@ -458,35 +444,23 @@ namespace MemoryHelper
                 return;
             }
 
+            CheckBox miaokuangCheckBox = (CheckBox)this.Controls.Find("miaokuangCheckBox", true)[0];
             TextBox miaokuangInput = (TextBox)this.Controls.Find("miaokuangInput", true)[0];
-            float miaokuangjindu = 0;
+            CheckBox freezeCheckBox = (CheckBox)this.Controls.Find("freezeCheckBox", true)[0];
+            bool enable = miaokuangCheckBox.Checked;
+            bool freeze = freezeCheckBox.Checked;
+            float miaokuangValue = 0.8999999762f;
 
-            if (float.TryParse(miaokuangInput.Text, out miaokuangjindu))
+            if (float.TryParse(miaokuangInput.Text, out miaokuangValue))
             {
-                AddOutput($"正在应用秒矿进度设置: {miaokuangjindu}");
-                MemoryTools.MiaokuangJindu(selectedWindows, miaokuangjindu);
-                AddOutput("秒矿进度设置已应用");
+                AddOutput($"正在应用秒矿设置: {(enable ? "开启" : "关闭")}, 值: {miaokuangValue}, 冻结: {(freeze ? "是" : "否")}");
+                MemoryTools.Miaokuang(selectedWindows, miaokuangValue, enable, freeze);
+                AddOutput("秒矿设置已应用");
             }
             else
             {
-                AddOutput("请输入有效的秒矿进度值");
+                AddOutput("请输入有效的秒矿值");
             }
-        }
-
-        private void MiaokuangIntervalButton_Click(object sender, EventArgs e)
-        {
-            if (selectedWindows == null || selectedWindows.Count == 0)
-            {
-                AddOutput("请先选择窗口");
-                return;
-            }
-
-            CheckBox miaokuangIntervalCheckBox = (CheckBox)this.Controls.Find("miaokuangIntervalCheckBox", true)[0];
-            bool enable = miaokuangIntervalCheckBox.Checked;
-
-            AddOutput($"正在应用秒矿间隔设置: {(enable ? "开启" : "关闭")}");
-            MemoryTools.MiaokuangInterval(selectedWindows, enable);
-            AddOutput("秒矿间隔设置已应用");
         }
 
         private void KuaidaoButton_Click(object sender, EventArgs e)
@@ -604,10 +578,10 @@ namespace MemoryHelper
 
             // 重置UI控件
             TextBox miaokuangInput = (TextBox)this.Controls.Find("miaokuangInput", true)[0];
-            miaokuangInput.Text = "0.7";
+            miaokuangInput.Text = "0.8999999762";
 
-            CheckBox miaokuangIntervalCheckBox = (CheckBox)this.Controls.Find("miaokuangIntervalCheckBox", true)[0];
-            miaokuangIntervalCheckBox.Checked = false;
+            CheckBox miaokuangCheckBox = (CheckBox)this.Controls.Find("miaokuangCheckBox", true)[0];
+            miaokuangCheckBox.Checked = false;
 
             CheckBox kuaidaoCheckBox = (CheckBox)this.Controls.Find("kuaidaoCheckBox", true)[0];
             kuaidaoCheckBox.Checked = false;

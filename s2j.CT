@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>19</ID>
+      <Description>"指针扫描结果"</Description>
+      <VariableType>Float</VariableType>
+      <Address>"MSVCR120.dll"+000DFE1C</Address>
+      <Offsets>
+        <Offset>1B0</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>37</ID>
+      <Description>"指针扫描结果"</Description>
+      <VariableType>Float</VariableType>
+      <Address>"MSVCR120.dll"+000DFE1C</Address>
+      <Offsets>
+        <Offset>1AC</Offset>
+      </Offsets>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>

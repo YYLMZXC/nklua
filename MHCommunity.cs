@@ -700,116 +700,141 @@ namespace MemoryHelper
             }
         }
 
-        // 修改秒矿进度
-        public static void MiaokuangJindu(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangjindu = 0)
+        // 修改秒矿（支持冻结模式）
+        public static void Miaokuang(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangValue = 0.8999999762f, bool enable = false, bool freeze = false)
         {
-            Log($"[秒矿进度] 开始应用秒矿进度设置，进度值: {miaokuangjindu}");
+            Log($"[秒矿设置] 开始应用秒矿设置，状态: {(enable ? "开启" : "关闭")}, 值: {miaokuangValue}, 冻结: {(freeze ? "是" : "否")}");
             if (hwndsNames == null)
             {
-                Log("[秒矿进度] 参数无效，跳过");
+                Log("[秒矿设置] 参数无效，跳过");
                 return;
             }
 
-            Log($"[秒矿进度] 共有 {hwndsNames.Count} 个窗口需要应用秒矿进度设置");
-            int windowIndex = 1;
-            foreach (var item in hwndsNames)
+            if (freeze && enable)
             {
-                IntPtr hwnd = item.Item1;
-                string name = item.Item2;
-                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
-
-                uint? processId = GetProcessId(hwnd);
-                if (!processId.HasValue)
-                {
-                    Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
-                    continue;
-                }
-                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
-
-                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
-                if (!moduleBase.HasValue)
-                {
-                    Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
-                    continue;
-                }
-                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
-
-                // 修改初始进度
-                IntPtr address = moduleBase.Value + 0x4CF4B1 + 3;
-                string bytesArrayMiaokuangjindu = FloatToBytes(miaokuangjindu);
-                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 修改秒矿进度: 地址 {address.ToString("X8")} = {bytesArrayMiaokuangjindu}");
-                WriteProcessMemoryWithBackup(processId.Value, address, bytesArrayMiaokuangjindu, 4);
-
-                Log($"[秒矿进度] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿进度设置应用完成");
-                windowIndex++;
+                // 冻结模式：添加到冻结列表并启动线程
+                Log("[秒矿设置] 启用冻结模式");
+                AddMiaokuangFreezeLocks(hwndsNames, miaokuangValue);
+                StartFreezeThread();
             }
-            Log("[秒矿进度] 所有窗口秒矿进度设置应用完成");
+            else
+            {
+                // 非冻结模式：一次性修改
+                Log("[秒矿设置] 启用一次性修改模式");
+                RemoveFreezeLocks();
+                StopFreezeThread();
+
+                if (enable)
+                {
+                    Log($"[秒矿设置] 共有 {hwndsNames.Count} 个窗口需要应用秒矿设置");
+                    int windowIndex = 1;
+                    foreach (var item in hwndsNames)
+                    {
+                        IntPtr hwnd = item.Item1;
+                        string name = item.Item2;
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
+
+                        uint? processId = GetProcessId(hwnd);
+                        if (!processId.HasValue)
+                        {
+                            Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                            continue;
+                        }
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
+
+                        // 获取 MSVCR120.dll 基址
+                        IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "MSVCR120.dll");
+                        if (!moduleBase.HasValue)
+                        {
+                            Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 无法获取 MSVCR120.dll 基址，跳过");
+                            continue;
+                        }
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] MSVCR120.dll 基址: {moduleBase.Value.ToString("X8")}");
+
+                        // 计算基址 + 偏移量
+                        IntPtr baseAddress = moduleBase.Value + 0x000DFE1C;
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 基址 + 偏移: {baseAddress.ToString("X8")}");
+
+                        // 读取指针值
+                        string pointerBytes = ReadProcessMemoryAsString(processId.Value, baseAddress, 4);
+                        if (pointerBytes == null)
+                        {
+                            Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 读取指针失败，跳过");
+                            continue;
+                        }
+                        uint pointerValue = BytesToInt(pointerBytes);
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 指针值: {pointerValue.ToString("X8")}");
+
+                        // 计算最终地址
+                        IntPtr finalAddress = (IntPtr)(pointerValue + 0x2C8);
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 最终地址: {finalAddress.ToString("X8")}");
+
+                        // 写入秒矿值
+                        string miaokuangBytes = FloatToBytes(miaokuangValue);
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 写入秒矿值: 地址 {finalAddress.ToString("X8")} = {miaokuangBytes}");
+                        WriteProcessMemoryWithBackup(processId.Value, finalAddress, miaokuangBytes, 4);
+
+                        Log($"[秒矿设置] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿设置应用完成");
+                        windowIndex++;
+                    }
+                    Log("[秒矿设置] 所有窗口秒矿设置应用完成");
+                }
+            }
         }
 
-        // 修改秒矿间隔
-        public static void MiaokuangInterval(List<Tuple<IntPtr, string>> hwndsNames, bool enable = false)
+        // 添加秒矿冻结锁定
+        private static void AddMiaokuangFreezeLocks(List<Tuple<IntPtr, string>> hwndsNames, float miaokuangValue)
         {
-            Log($"[秒矿间隔] 开始应用秒矿间隔设置，状态: {(enable ? "开启" : "关闭")}");
-            if (hwndsNames == null)
-            {
-                Log("[秒矿间隔] 参数无效，跳过");
-                return;
-            }
+            Log("[秒矿冻结锁定] 添加冻结锁定...");
+            RemoveFreezeLocks();
 
-            Log($"[秒矿间隔] 共有 {hwndsNames.Count} 个窗口需要应用秒矿间隔设置");
-            int windowIndex = 1;
             foreach (var item in hwndsNames)
             {
                 IntPtr hwnd = item.Item1;
                 string name = item.Item2;
-                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 处理窗口: {name} (句柄: {hwnd.ToString("X8")})");
 
                 uint? processId = GetProcessId(hwnd);
                 if (!processId.HasValue)
                 {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 无法获取进程ID，跳过");
+                    Log($"[秒矿冻结锁定] 窗口 {name} 无法获取进程ID，跳过");
                     continue;
                 }
-                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 进程ID: {processId.Value}");
 
-                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "netcraft.exe");
+                // 获取 MSVCR120.dll 基址
+                IntPtr? moduleBase = GetModuleBaseAddress(processId.Value, "MSVCR120.dll");
                 if (!moduleBase.HasValue)
                 {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 无法获取模块基址，跳过");
+                    Log($"[秒矿冻结锁定] 窗口 {name} 无法获取 MSVCR120.dll 基址，跳过");
                     continue;
                 }
-                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 模块基址: {moduleBase.Value.ToString("X8")}");
 
-                // 修改秒矿间隔（禁止修改进度）
-                IntPtr address = moduleBase.Value + 0x3921D8;
-                if (enable)
-                {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 开启秒矿间隔: 地址 {address.ToString("X8")} = 90 90 90 90");
-                    WriteProcessMemoryWithBackup(processId.Value, address, "90 90 90 90", 4);
-                }
-                else
-                {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 关闭秒矿间隔: 地址 {address.ToString("X8")} = F3 0F 11 00");
-                    WriteProcessMemoryWithBackup(processId.Value, address, "F3 0F 11 00", 4);
-                }
+                // 计算基址 + 偏移量
+                IntPtr baseAddress = moduleBase.Value + 0x000DFE1C;
 
-                // 修改秒矿间隔检查
-                address = moduleBase.Value + 0x4CCB39;
-                if (enable)
+                // 读取指针值
+                string pointerBytes = ReadProcessMemoryAsString(processId.Value, baseAddress, 4);
+                if (pointerBytes == null)
                 {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 删除秒矿间隔检查: 地址 {address.ToString("X8")} = 90 90");
-                    WriteProcessMemoryWithBackup(processId.Value, address, "90 90", 2);
+                    Log($"[秒矿冻结锁定] 窗口 {name} 读取指针失败，跳过");
+                    continue;
                 }
-                else
-                {
-                    Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 恢复秒矿间隔检查: 地址 {address.ToString("X8")} = 72 54");
-                    WriteProcessMemoryWithBackup(processId.Value, address, "72 54", 2);
-                }
+                uint pointerValue = BytesToInt(pointerBytes);
 
-                Log($"[秒矿间隔] [{windowIndex}/{hwndsNames.Count}] 窗口 {name} 秒矿间隔设置应用完成");
-                windowIndex++;
+                // 计算最终地址
+                IntPtr finalAddress = (IntPtr)(pointerValue + 0x2C8);
+                string miaokuangBytes = FloatToBytes(miaokuangValue);
+
+                FreezeLock lockItem = new FreezeLock
+                {
+                    ProcessId = processId.Value,
+                    Address = finalAddress,
+                    ValueBytes = miaokuangBytes,
+                    Size = 4,
+                    IsActive = true
+                };
+                freezeLocks.Add(lockItem);
+                Log($"[秒矿冻结锁定] 添加窗口 {name} 的冻结锁定: 地址 {finalAddress.ToString("X8")} = {miaokuangBytes}");
             }
-            Log("[秒矿间隔] 所有窗口秒矿间隔设置应用完成");
         }
 
         // 修改快刀
